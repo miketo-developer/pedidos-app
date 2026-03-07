@@ -18,3 +18,18 @@ self.addEventListener("fetch", (e) => {
   );
 });
 
+self.addEventListener("fetch", (event) => {
+  if (event.request.method === "POST") {
+    event.respondWith(
+      (async () => {
+        const formData = await event.request.formData();
+        const file = formData.get("archivo");
+
+        const cache = await caches.open("shared-file");
+        await cache.put("ultimo-archivo", new Response(file));
+
+        return Response.redirect("./index.html");
+      })(),
+    );
+  }
+});

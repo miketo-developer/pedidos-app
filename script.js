@@ -201,3 +201,40 @@ if ("serviceWorker" in navigator) {
       .catch((err) => console.log("Error registrando SW", err));
   });
 }
+
+
+
+async function cargarArchivoCompartido() {
+  const cache = await caches.open("shared-file");
+
+  const response = await cache.match("ultimo-archivo");
+
+  if (!response) return;
+
+  const blob = await response.blob();
+
+  procesarArchivo(blob);
+}
+
+window.addEventListener("load", cargarArchivoCompartido);
+
+function procesarArchivo(file) {
+  const reader = new FileReader();
+
+  reader.onload = function (evt) {
+    const data = new Uint8Array(evt.target.result);
+
+    const workbook = XLSX.read(data, { type: "array" });
+
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+    datos = XLSX.utils.sheet_to_json(sheet);
+
+    detectarFechas();
+    detectarTipos();
+
+    alert("Archivo cargado desde compartir");
+  };
+
+  reader.readAsArrayBuffer(file);
+}
