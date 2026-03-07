@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e7d32">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pedidos por tienda</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="app">
+      <h1>📦 Pedidos por tienda</h1>
+
+      <input type="file" id="archivo" />
+
+      <input id="busquedaTienda" placeholder="🔎 Buscar tienda (ej. 1109)" />
+
+      <div class="rapidas">
+        <button onclick="setTienda('1109')">1109</button>
+        <button onclick="setTienda('1161')">1161</button>
+        <button onclick="setTienda('3296')">3296</button>
+      </div>
+
+      <div class="fechas">
+        <b>📅 Fechas disponibles</b>
+        <div id="listaFechas" class="opciones-lista"></div>
+      </div>
+
+      <div class="tipos">
+        <b>Tipo de producto</b>
+        <div id="listaTipos" class="opciones-lista"></div>
+      </div>
+
+      <button onclick="generarPedido()">Mostrar pedido</button>
+
+      <div id="resultado"></div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

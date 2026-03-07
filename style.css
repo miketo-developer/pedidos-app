@@ -1,0 +1,142 @@
+body {
+  font-family: system-ui;
+  background: #f2f4f7;
+  margin: 0;
+  padding: 15px;
+}
+
+.app {
+  max-width: 520px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  font-size: 26px;
+}
+
+.tipos {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 12px;
+  font-size: 18px;
+}
+
+input,
+button {
+  width: 100%;
+  padding: 16px;
+  margin-top: 12px;
+  font-size: 18px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: #1976d2;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.rapidas {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rapidas button {
+  flex: 1;
+  background: #555;
+}
+
+.fechas {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 12px;
+  font-size: 18px;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.header {
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.titulo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.stats {
+  margin-top: 8px;
+  color: #555;
+  font-size: 16px;
+}
+
+.producto {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.material {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.codigo {
+  color: #666;
+  font-size: 16px;
+}
+
+.cantidad {
+  color: #1976d2;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.exportar {
+  margin-top: 15px;
+  background: #25d366;
+  font-size: 20px;
+}
+
+.opciones-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.opcion input {
+  transform: scale(1.2);
+  margin: 0;
+  width: auto;
+}
+
+.opcion:hover {
+  background: #f0f0f0;
+}
