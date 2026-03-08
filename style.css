@@ -150,14 +150,13 @@ button {
   border-radius: 12px;
   overflow-x: auto;
   max-width:100%;
-  display:inline-block;
 }
 
 .tabla-pedido {
   border-collapse: collapse;
   width: 100%;
   min-width: 700px;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .tabla-pedido th {

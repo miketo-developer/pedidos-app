@@ -175,6 +175,7 @@ html += `
   
 }
 
+/*
 function exportar() {
   html2canvas(document.getElementById("tarjeta")).then((canvas) => {
     const link = document.createElement("a");
@@ -183,7 +184,8 @@ function exportar() {
     link.click();
   });
 }
-
+*/
+/*
 function exportarYWhatsApp() {
   html2canvas(document.getElementById("tarjeta")).then((canvas) => {
     const link = document.createElement("a");
@@ -199,83 +201,53 @@ function exportarYWhatsApp() {
     }, 800);
   });
 }
+*/
 
 /* Nuevo intento para tratar de capturar toda la tabla en una imagen. 
 Dibujar tabla en CANVAS */
 async function compartirImagen() {
+  const elemento = document.getElementById("tarjeta");
+  
+  if (!elemento) return;
 
-  const filas = [...document.querySelectorAll("#tarjeta tbody tr")];
+  // 1. Configuramos opciones para forzar la captura completa
+  const opciones = {
+    scale: 2, // Mejora la calidad (ideal para leer textos pequeños)
+    useCORS: true,
+    logging: false,
+    backgroundColor: "#ffffff",
+    // Estas dos líneas son la clave para el error de recorte en móvil:
+    width: elemento.scrollWidth,
+    height: elemento.scrollHeight
+  };
 
-  const columnas = [...document.querySelectorAll("#tarjeta thead th")].map(
-    th => th.innerText
-  );
+  try {
+    const canvas = await html2canvas(elemento, opciones);
+    
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], "pedido.png", { type: "image/png" });
 
-  const datos = filas.map(tr =>
-    [...tr.querySelectorAll("td")].map(td => td.innerText)
-  );
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "Pedido Tienda",
+          text: "Aquí está el resumen del pedido."
+        });
+      } else {
+        // Fallback: descarga directa
+        const link = document.createElement("a");
+        link.download = "pedido.png";
+        link.href = canvas.toDataURL();
+        link.click();
+      }
+    }, "image/png");
 
-  const anchoCol = 220;
-  const altoFila = 40;
-
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = columnas.length * anchoCol;
-  canvas.height = (datos.length + 1) * altoFila;
-
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.font = "16px Arial";
-
-  // encabezados
-  ctx.fillStyle = "#26303a";
-  ctx.fillRect(0, 0, canvas.width, altoFila);
-
-  ctx.fillStyle = "white";
-
-  columnas.forEach((col, i) => {
-    ctx.fillText(col, i * anchoCol + 10, 25);
-  });
-
-  ctx.fillStyle = "black";
-
-  datos.forEach((fila, y) => {
-    fila.forEach((celda, x) => {
-
-      ctx.fillText(
-        celda,
-        x * anchoCol + 10,
-        (y + 1) * altoFila + 25
-      );
-
-    });
-  });
-
-  canvas.toBlob(async blob => {
-
-    const file = new File([blob], "pedido.png", { type: "image/png" });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-
-      await navigator.share({
-        files: [file],
-        title: "Pedido",
-        text: "Pedido generado desde la app"
-      });
-
-    } else {
-
-      const link = document.createElement("a");
-      link.download = "pedido.png";
-      link.href = canvas.toDataURL();
-      link.click();
-
-    }
-
-  });
-
+  } catch (err) {
+    console.error("Error al capturar la imagen:", err);
+    alert("No se pudo generar la imagen.");
+  }
 }
+
 
 function detectarTipos() {
   const tipos = new Set();
