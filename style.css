@@ -180,3 +180,27 @@ button {
   background: #eef3ff;
 }
 
+/* Estilo especial para capturar la imagen de la tabla */
+.captura-area {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  background: white;
+  padding: 20px;
+}
+
+.captura-area table {
+  border-collapse: collapse;
+  font-size: 18px;
+}
+
+.captura-area th {
+  background: #1976d2;
+  color: white;
+  padding: 10px;
+}
+
+.captura-area td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}

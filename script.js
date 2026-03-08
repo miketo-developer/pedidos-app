@@ -206,23 +206,21 @@ async function compartirImagen() {
 
   const tablaOriginal = document.querySelector("#tarjeta table");
 
-  const clon = tablaOriginal.cloneNode(true);
-
   const contenedor = document.createElement("div");
+  contenedor.className = "captura-area";
 
-  contenedor.style.position = "fixed";
-  contenedor.style.left = "-10000px";
-  contenedor.style.top = "0";
-  contenedor.style.background = "white";
-  contenedor.style.padding = "20px";
+  const tablaClon = tablaOriginal.cloneNode(true);
 
-  contenedor.appendChild(clon);
+  contenedor.appendChild(tablaClon);
 
   document.body.appendChild(contenedor);
 
-  const canvas = await html2canvas(clon, {
+  await new Promise(r => setTimeout(r, 300));
+
+  const canvas = await html2canvas(contenedor, {
     scale: 2,
-    backgroundColor: "#ffffff"
+    backgroundColor: "#ffffff",
+    windowWidth: tablaClon.scrollWidth + 200
   });
 
   document.body.removeChild(contenedor);
