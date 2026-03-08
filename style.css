@@ -160,7 +160,7 @@ button {
 }
 
 .tabla-pedido th {
-  background: #1976d2;
+  background: #26303a;
   color: white;
   padding: 10px;
   text-align: left;
@@ -224,3 +224,35 @@ button {
   table-layout: auto !important;
   min-width: 0 !important; /* Resetear min-width si lo tienes */
 }
+
+
+
+/* Estilos específicos para la tabla dentro del área de captura oculta */
+#area-captura-oculta .tabla-pedido {
+  width: auto !important; /* Forzar ancho automático, no 100% */
+  table-layout: auto !important;
+  min-width: 0 !important;
+  border-collapse: collapse;
+  font-size: 16px; /* Ajusta el tamaño de fuente si lo deseas para la imagen */
+  background: white;
+}
+
+#area-captura-oculta .tabla-pedido th {
+  background: #26303a; /* Asegurar el color en la captura */
+  color: white;
+  padding: 12px; /* Un poco más de padding para la imagen */
+  text-align: left;
+  white-space: nowrap; /* Evitar que los encabezados se rompan en líneas */
+}
+
+#area-captura-oculta .tabla-pedido td {
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
+  white-space: nowrap; /* Evitar que el contenido de las celdas se rompa */
+}
+
+#area-captura-oculta .tabla-pedido tr:nth-child(even) {
+  background: #f5f7fa;
+}
+
+

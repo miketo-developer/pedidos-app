@@ -78,102 +78,57 @@ function generarPedido() {
 
   if (filas.length == 0) {
     document.getElementById("resultado").innerHTML = "Sin resultados";
+    document.getElementById("area-captura-oculta").innerHTML = ""; // Limpiar zona oculta
     return;
   }
 
-  const head = filas[0];
-  let totalPiezas = 0;
+  const columnas = [
+    "FePrefEnt.",
+    "Solic.",
+    "Solicitante",
+    "Material",
+    "Número de material",
+    "Ctd pedido UMV"
+  ];
 
-  filas.forEach((f) => {
-    totalPiezas += Number(f["Ctd pedido UMV"] || 0);
-  });
-
-  /*
-  let html = `
-    <div class="card" id="tarjeta">
-      <div class="header">
-        <div class="titulo">${head["Solicitante"]}</div>
-        <div>📅 Entrega: ${head["FePrefEnt."]}</div>
-        <div>📄 Solicitud: ${head["Solic."]}</div>
-        <div class="stats">
-          📦 Productos: ${filas.length} | 📊 Piezas: ${totalPiezas}
-        </div>
-      </div>
+  // --- 1. Generar el HTML de la tabla ---
+  let htmlTabla = `
+    <table class="tabla-pedido">
+      <thead>
+        <tr>
+          ${columnas.map(col => `<th>${col}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${filas.map(fila => `
+          <tr>
+            ${columnas.map(col => `<td>${fila[col] ?? ""}</td>`).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
   `;
-*/
 
-const columnas = [
-"FePrefEnt.",
-"Solic.",
-"Solicitante",
-"Material",
-"Número de material",
-"Ctd pedido UMV"
-];
-
-  //let columnas = Object.keys(filas[0]);
-
-  let html = `
-<div class="tabla-wrapper" id="tarjeta">
-
-<table class="tabla-pedido">
-<thead>
-<tr>
-`;
-
-columnas.forEach(col => {
-  html += `<th>${col}</th>`;
-});
-
-html += `
-</tr>
-</thead>
-<tbody>
-`;
-
-  filas.forEach(fila => {
-
-  html += "<tr>";
-
-  columnas.forEach(col => {
-    html += `<td>${fila[col] ?? ""}</td>`;
-  });
-
-  html += "</tr>";
-
-});
-
-  /*
-  filas.forEach((r) => {
-    html += `
-      <div class="producto">
-        <div class="material">${r["Material"]}</div>
-        <div class="codigo">${r["Número de material"]}</div>
-        <div class="cantidad">Cantidad: ${r["Ctd pedido UMV"]}</div>
-      </div>
-    `;
-  });
-*/
-
-  // <button class="exportar" onclick="exportar()">📸 Exportar imagen</button>
-  // <button class="exportar" onclick="exportarYWhatsApp()">📸 Exportar y abrir WhatsApp</button>
-  
-  html += `
-</tbody>
-</table>
-</div>
-
-<button class="exportar" onclick="compartirImagen()">📲 Compartir imagen</button>
-`;
-
-  /*
-  html += `</div>
-    <button class="exportar" onclick="compartirImagen()">📲 Compartir imagen</button>
+  // --- 2. Renderizar en la pantalla (con scroll) ---
+  let htmlPantalla = `
+    <div class="tabla-wrapper" id="tarjeta">
+      ${htmlTabla}
+    </div>
+    <button class="exportar" onclick="compartirImagen()">📲 Compartir imagen completa</button>
   `;
-*/
-  document.getElementById("resultado").innerHTML = html;
-  
+  document.getElementById("resultado").innerHTML = htmlPantalla;
+
+  // --- 3. Renderizar en la zona oculta (sin restricciones de tamaño) ---
+  // Añadimos un padding extra alrededor de la tabla para la imagen
+  document.getElementById("area-captura-oculta").innerHTML = `
+    <div style="padding: 20px; background: white;">
+      ${htmlTabla}
+    </div>
+  `;
 }
+
+
+
 
 /*
 function exportar() {
@@ -207,76 +162,60 @@ function exportarYWhatsApp() {
 Dibujar tabla en CANVAS */
 /* Nueva función robusta para capturar la tabla completa en móvil */
 async function compartirImagen() {
-  const elementoOriginal = document.getElementById("tarjeta");
+  const elementoACapturar = document.getElementById("area-captura-oculta");
   
-  if (!elementoOriginal) {
+  // Verificación de seguridad
+  if (!elementoACapturar || elementoACapturar.innerHTML.trim() === "") {
     alert("Primero genera un pedido.");
     return;
   }
 
-  // 1. Crear un contenedor temporal para el clon
-  const contenedorClon = document.createElement("div");
-  contenedorClon.className = "clon-para-captura";
-  document.body.appendChild(contenedorClon);
-
-  // 2. Clonar el elemento original y añadirlo al contenedor
-  const elementoClonado = elementoOriginal.cloneNode(true);
-  contenedorClon.appendChild(elementoClonado);
-
-  // 3. Forzar al clon a tener su ancho total real (sin scroll)
-  // Esto es crucial para que html2canvas no lo recorte
-  const anchoReal = elementoOriginal.scrollWidth;
-  elementoClonado.style.width = `${anchoReal}px`;
-
-  // 4. Configuración de html2canvas optimizada para el clon
+  // Configuración de html2canvas optimizada para capturar el área oculta completa
   const opciones = {
-    scale: 2, // Buena calidad
+    scale: 2, // Alta calidad
     useCORS: true,
-    logging: false, // Cambiar a true si necesitas depurar
+    logging: false, 
     backgroundColor: "#ffffff",
-    // No necesitamos setear width/height aquí, el CSS del clon se encarga
+    // IMPORTANTE: No limitamos width ni height, html2canvas capturará todo el contenido del div oculto
   };
 
   try {
-    // 5. Capturar el contenedor que tiene el clon a tamaño completo
-    const canvas = await html2canvas(contenedorClon, opciones);
+    // Capturar el área oculta que contiene la tabla a tamaño completo
+    const canvas = await html2canvas(elementoACapturar, opciones);
     
-    // 6. Limpiar el DOM inmediatamente
-    document.body.removeChild(contenedorClon);
-
-    // 7. Compartir o descargar
+    // Compartir o descargar
     canvas.toBlob(async (blob) => {
-      const file = new File([blob], "pedido.png", { type: "image/png" });
+      if (!blob) {
+        alert("Error al generar la imagen.");
+        return;
+      }
+      const file = new File([blob], "pedido-completo.png", { type: "image/png" });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
             files: [file],
-            title: "Pedido Tienda",
-            text: "Aquí está el resumen del pedido completo."
+            title: "Pedido Completo",
+            text: "Aquí está el resumen del pedido completo (imagen generada)."
           });
         } catch (shareErr) {
-          // El usuario canceló la acción de compartir
           console.log("Compartir cancelado o fallido:", shareErr);
         }
       } else {
         // Fallback: descarga directa si navigator.share no está disponible
         const link = document.createElement("a");
-        link.download = "pedido.png";
-        link.href = canvas.toDataURL();
+        link.download = "pedido-completo.png";
+        link.href = canvas.toDataURL("image/png");
         link.click();
       }
     }, "image/png");
 
   } catch (err) {
-    // Asegurar limpieza incluso si hay error
-    if (document.body.contains(contenedorClon)) {
-      document.body.removeChild(contenedorClon);
-    }
     console.error("Error crítico al capturar la imagen:", err);
     alert("No se pudo generar la imagen completa. Inténtalo de nuevo.");
   }
 }
+
 
 
 function detectarTipos() {
@@ -348,13 +287,10 @@ function procesarArchivo(file) {
   reader.readAsArrayBuffer(file);
 }
 
-
 async function abrirArchivoDelSistema() {
-
   if (!("launchQueue" in window)) return;
 
   launchQueue.setConsumer(async (launchParams) => {
-
     if (!launchParams.files.length) return;
 
     const fileHandle = launchParams.files[0];
@@ -362,9 +298,7 @@ async function abrirArchivoDelSistema() {
     const file = await fileHandle.getFile();
 
     procesarArchivo(file);
-
   });
-
 }
 
 window.addEventListener("load", abrirArchivoDelSistema);
