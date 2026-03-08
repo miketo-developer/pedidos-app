@@ -292,3 +292,24 @@ function procesarArchivo(file) {
 
   reader.readAsArrayBuffer(file);
 }
+
+
+async function abrirArchivoDelSistema() {
+
+  if (!("launchQueue" in window)) return;
+
+  launchQueue.setConsumer(async (launchParams) => {
+
+    if (!launchParams.files.length) return;
+
+    const fileHandle = launchParams.files[0];
+
+    const file = await fileHandle.getFile();
+
+    procesarArchivo(file);
+
+  });
+
+}
+
+window.addEventListener("load", abrirArchivoDelSistema);
