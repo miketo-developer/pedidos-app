@@ -203,3 +203,24 @@ button {
   padding: 8px;
   border-bottom: 1px solid #ddd;
 }
+
+
+/* Estilo para el contenedor de clonación invisible */
+.clon-para-captura {
+  position: absolute;
+  top: -9999px; /* Fuera de la vista */
+  left: -9999px;
+  width: auto !important; /* Forzar ancho automático */
+  height: auto !important; /* Forzar alto automático */
+  overflow: visible !important; /* Asegurar que no haya recortes */
+  display: block !important;
+  background: white; /* Fondo blanco para la imagen */
+  padding: 20px; /* Un poco de aire */
+}
+
+/* Asegurar que la tabla clonada se renderice a ancho completo */
+.clon-para-captura .tabla-pedido {
+  width: auto !important;
+  table-layout: auto !important;
+  min-width: 0 !important; /* Resetear min-width si lo tienes */
+}

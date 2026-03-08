@@ -205,36 +205,62 @@ function exportarYWhatsApp() {
 
 /* Nuevo intento para tratar de capturar toda la tabla en una imagen. 
 Dibujar tabla en CANVAS */
+/* Nueva función robusta para capturar la tabla completa en móvil */
 async function compartirImagen() {
-  const elemento = document.getElementById("tarjeta");
+  const elementoOriginal = document.getElementById("tarjeta");
   
-  if (!elemento) return;
+  if (!elementoOriginal) {
+    alert("Primero genera un pedido.");
+    return;
+  }
 
-  // 1. Configuramos opciones para forzar la captura completa
+  // 1. Crear un contenedor temporal para el clon
+  const contenedorClon = document.createElement("div");
+  contenedorClon.className = "clon-para-captura";
+  document.body.appendChild(contenedorClon);
+
+  // 2. Clonar el elemento original y añadirlo al contenedor
+  const elementoClonado = elementoOriginal.cloneNode(true);
+  contenedorClon.appendChild(elementoClonado);
+
+  // 3. Forzar al clon a tener su ancho total real (sin scroll)
+  // Esto es crucial para que html2canvas no lo recorte
+  const anchoReal = elementoOriginal.scrollWidth;
+  elementoClonado.style.width = `${anchoReal}px`;
+
+  // 4. Configuración de html2canvas optimizada para el clon
   const opciones = {
-    scale: 2, // Mejora la calidad (ideal para leer textos pequeños)
+    scale: 2, // Buena calidad
     useCORS: true,
-    logging: false,
+    logging: false, // Cambiar a true si necesitas depurar
     backgroundColor: "#ffffff",
-    // Estas dos líneas son la clave para el error de recorte en móvil:
-    width: elemento.scrollWidth,
-    height: elemento.scrollHeight
+    // No necesitamos setear width/height aquí, el CSS del clon se encarga
   };
 
   try {
-    const canvas = await html2canvas(elemento, opciones);
+    // 5. Capturar el contenedor que tiene el clon a tamaño completo
+    const canvas = await html2canvas(contenedorClon, opciones);
     
+    // 6. Limpiar el DOM inmediatamente
+    document.body.removeChild(contenedorClon);
+
+    // 7. Compartir o descargar
     canvas.toBlob(async (blob) => {
       const file = new File([blob], "pedido.png", { type: "image/png" });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: "Pedido Tienda",
-          text: "Aquí está el resumen del pedido."
-        });
+        try {
+          await navigator.share({
+            files: [file],
+            title: "Pedido Tienda",
+            text: "Aquí está el resumen del pedido completo."
+          });
+        } catch (shareErr) {
+          // El usuario canceló la acción de compartir
+          console.log("Compartir cancelado o fallido:", shareErr);
+        }
       } else {
-        // Fallback: descarga directa
+        // Fallback: descarga directa si navigator.share no está disponible
         const link = document.createElement("a");
         link.download = "pedido.png";
         link.href = canvas.toDataURL();
@@ -243,8 +269,12 @@ async function compartirImagen() {
     }, "image/png");
 
   } catch (err) {
-    console.error("Error al capturar la imagen:", err);
-    alert("No se pudo generar la imagen.");
+    // Asegurar limpieza incluso si hay error
+    if (document.body.contains(contenedorClon)) {
+      document.body.removeChild(contenedorClon);
+    }
+    console.error("Error crítico al capturar la imagen:", err);
+    alert("No se pudo generar la imagen completa. Inténtalo de nuevo.");
   }
 }
 
