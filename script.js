@@ -88,6 +88,7 @@ function generarPedido() {
     totalPiezas += Number(f["Ctd pedido UMV"] || 0);
   });
 
+  /*
   let html = `
     <div class="card" id="tarjeta">
       <div class="header">
@@ -99,7 +100,47 @@ function generarPedido() {
         </div>
       </div>
   `;
+*/
 
+  let columnas = Object.keys(filas[0]);
+
+  let html = `
+<div class="tabla-wrapper" id="tarjeta">
+
+<table class="tabla-pedido">
+<thead>
+<tr>
+`;
+
+  columnas.forEach((col) => {
+    html += `<th>${col}</th>`;
+  });
+
+  html += `
+  </tr>
+    </thead>
+  <tbody>
+`;
+
+  filas.forEach((fila) => {
+    html += "<tr>";
+
+    columnas.forEach((col) => {
+      html += `<td>${fila[col] ?? ""}</td>`;
+    });
+
+    html += "</tr>";
+  });
+
+  html += `
+  </tbody>
+    </table>
+    </div>
+
+  <button class="exportar" onclick="compartirImagen()">📲 Compartir imagen</button>
+`;
+
+  /*
   filas.forEach((r) => {
     html += `
       <div class="producto">
@@ -109,6 +150,7 @@ function generarPedido() {
       </div>
     `;
   });
+*/
 
   // <button class="exportar" onclick="exportar()">📸 Exportar imagen</button>
   // <button class="exportar" onclick="exportarYWhatsApp()">📸 Exportar y abrir WhatsApp</button>
@@ -201,8 +243,6 @@ if ("serviceWorker" in navigator) {
       .catch((err) => console.log("Error registrando SW", err));
   });
 }
-
-
 
 async function cargarArchivoCompartido() {
   const cache = await caches.open("shared-file");

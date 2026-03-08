@@ -140,3 +140,42 @@ button {
 .opcion:hover {
   background: #f0f0f0;
 }
+
+
+/* Para la tabla */
+.tabla-wrapper {
+  background: white;
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 12px;
+  overflow-x: auto;
+  max-width:100%;
+}
+
+.tabla-pedido {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 700px;
+  font-size: 16px;
+}
+
+.tabla-pedido th {
+  background: #1976d2;
+  color: white;
+  padding: 10px;
+  text-align: left;
+}
+
+.tabla-pedido td {
+  border-bottom: 1px solid #ddd;
+  padding: 8px;
+}
+
+.tabla-pedido tr:nth-child(even) {
+  background: #f5f7fa;
+}
+
+.tabla-pedido tr:hover {
+  background: #eef3ff;
+}
+
