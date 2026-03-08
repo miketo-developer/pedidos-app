@@ -201,31 +201,58 @@ function exportarYWhatsApp() {
 }
 
 /* Nuevo intento para tratar de capturar toda la tabla en una imagen. 
-Poner la tabla fuera del viewport */
+Dibujar tabla en CANVAS */
 async function compartirImagen() {
 
-  const tablaOriginal = document.querySelector("#tarjeta table");
+  const filas = [...document.querySelectorAll("#tarjeta tbody tr")];
 
-  const contenedor = document.createElement("div");
-  contenedor.className = "captura-area";
+  const columnas = [...document.querySelectorAll("#tarjeta thead th")].map(
+    th => th.innerText
+  );
 
-  const tablaClon = tablaOriginal.cloneNode(true);
+  const datos = filas.map(tr =>
+    [...tr.querySelectorAll("td")].map(td => td.innerText)
+  );
 
-  contenedor.appendChild(tablaClon);
+  const anchoCol = 220;
+  const altoFila = 40;
 
-  document.body.appendChild(contenedor);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
-  await new Promise(r => setTimeout(r, 300));
+  canvas.width = columnas.length * anchoCol;
+  canvas.height = (datos.length + 1) * altoFila;
 
-  const canvas = await html2canvas(contenedor, {
-    scale: 2,
-    backgroundColor: "#ffffff",
-    windowWidth: tablaClon.scrollWidth + 200
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.font = "16px Arial";
+
+  // encabezados
+  ctx.fillStyle = "#26303a";
+  ctx.fillRect(0, 0, canvas.width, altoFila);
+
+  ctx.fillStyle = "white";
+
+  columnas.forEach((col, i) => {
+    ctx.fillText(col, i * anchoCol + 10, 25);
   });
 
-  document.body.removeChild(contenedor);
+  ctx.fillStyle = "black";
 
-  canvas.toBlob(async (blob) => {
+  datos.forEach((fila, y) => {
+    fila.forEach((celda, x) => {
+
+      ctx.fillText(
+        celda,
+        x * anchoCol + 10,
+        (y + 1) * altoFila + 25
+      );
+
+    });
+  });
+
+  canvas.toBlob(async blob => {
 
     const file = new File([blob], "pedido.png", { type: "image/png" });
 
