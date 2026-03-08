@@ -1,3 +1,198 @@
+/* style.css */
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f2f4f7;
+  margin: 0;
+  padding: 15px;
+  color: #333;
+}
+
+.app {
+  max-width: 520px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Estilos de inputs y botones */
+input, select, button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  box-sizing: border-box; /* Crucial para el padding */
+}
+
+input:focus, select:focus {
+  outline: 2px solid #1976d2;
+  border-color: transparent;
+}
+
+button {
+  background: #1976d2;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #1565c0;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Secciones de filtros */
+.fechas, .tipos {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.seccion-titulo {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* Botones rápidos */
+.rapidas {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rapidas button {
+  flex: 1;
+  background: #546e7a;
+  padding: 12px;
+  font-size: 15px;
+}
+
+.rapidas button:hover {
+  background: #455a64;
+}
+
+/* Lista de opciones (radio/checkbox) */
+.opciones-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.opcion:hover {
+  background: #f0f0f0;
+}
+
+.opcion input {
+  width: auto;
+  margin: 0;
+  transform: scale(1.1);
+}
+
+/* Resultado y Tabla (lo que ve el usuario) */
+#resultado {
+  margin-top: 20px;
+}
+
+.tabla-wrapper {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  overflow-x: auto; /* Permite scroll horizontal en móvil */
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabla-pedido {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 600px; /* Ancho mínimo para que no se amontone */
+  font-size: 14px;
+}
+
+.tabla-pedido th {
+  background: #26303a; /* NUEVO COLOR CONFIRMACIÓN */
+  color: white;
+  padding: 12px 10px;
+  text-align: left;
+  position: sticky; /* Opcional: encabezado fijo al hacer scroll */
+  top: 0;
+}
+
+.tabla-pedido td {
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+}
+
+.tabla-pedido tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+.exportar {
+  margin-top: 15px;
+  background: #25d366; /* Color WhatsApp */
+  font-size: 18px;
+  padding: 16px;
+}
+
+.exportar:hover {
+  background: #1da851;
+}
+
+/* Eliminamos estilos antiguos e innecesarios como .captura-area y .clon-para-captura */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
 body {
   font-family: system-ui;
   background: #f2f4f7;
@@ -142,7 +337,7 @@ button {
 }
 
 
-/* Para la tabla */
+/* Para la tabla *//*
 .tabla-wrapper {
   background: white;
   margin-top: 20px;
@@ -179,7 +374,7 @@ button {
   background: #eef3ff;
 }
 
-/* Estilo especial para capturar la imagen de la tabla */
+/* Estilo especial para capturar la imagen de la tabla *//*
 .captura-area {
   position: fixed;
   left: -10000px;
@@ -205,54 +400,54 @@ button {
 }
 
 
-/* Estilo para el contenedor de clonación invisible */
+/* Estilo para el contenedor de clonación invisible *//*
 .clon-para-captura {
   position: absolute;
-  top: -9999px; /* Fuera de la vista */
+  top: -9999px; /* Fuera de la vista *//*
   left: -9999px;
-  width: auto !important; /* Forzar ancho automático */
-  height: auto !important; /* Forzar alto automático */
-  overflow: visible !important; /* Asegurar que no haya recortes */
+  width: auto !important; /* Forzar ancho automático *//*
+  height: auto !important; /* Forzar alto automático *//*
+  overflow: visible !important; /* Asegurar que no haya recortes *//*
   display: block !important;
-  background: white; /* Fondo blanco para la imagen */
-  padding: 20px; /* Un poco de aire */
+  background: white; /* Fondo blanco para la imagen *//*
+  padding: 20px; /* Un poco de aire *//*
 }
 
-/* Asegurar que la tabla clonada se renderice a ancho completo */
+/* Asegurar que la tabla clonada se renderice a ancho completo *//*
 .clon-para-captura .tabla-pedido {
   width: auto !important;
   table-layout: auto !important;
-  min-width: 0 !important; /* Resetear min-width si lo tienes */
+  min-width: 0 !important; /* Resetear min-width si lo tienes *//*
 }
 
 
 
-/* Estilos específicos para la tabla dentro del área de captura oculta */
+/* Estilos específicos para la tabla dentro del área de captura oculta *//*
 #area-captura-oculta .tabla-pedido {
-  width: auto !important; /* Forzar ancho automático, no 100% */
+  width: auto !important; /* Forzar ancho automático, no 100% *//*
   table-layout: auto !important;
   min-width: 0 !important;
   border-collapse: collapse;
-  font-size: 16px; /* Ajusta el tamaño de fuente si lo deseas para la imagen */
+  font-size: 16px; /* Ajusta el tamaño de fuente si lo deseas para la imagen *//*
   background: white;
 }
 
 #area-captura-oculta .tabla-pedido th {
-  background: #26303a; /* Asegurar el color en la captura */
+  background: #26303a; /* Asegurar el color en la captura *//*
   color: white;
-  padding: 12px; /* Un poco más de padding para la imagen */
+  padding: 12px; /* Un poco más de padding para la imagen *//*
   text-align: left;
-  white-space: nowrap; /* Evitar que los encabezados se rompan en líneas */
+  white-space: nowrap; /* Evitar que los encabezados se rompan en líneas *//*
 }
 
 #area-captura-oculta .tabla-pedido td {
   border-bottom: 1px solid #ddd;
   padding: 10px;
-  white-space: nowrap; /* Evitar que el contenido de las celdas se rompa */
+  white-space: nowrap; /* Evitar que el contenido de las celdas se rompa *//*
 }
 
 #area-captura-oculta .tabla-pedido tr:nth-child(even) {
   background: #f5f7fa;
 }
-
+*/
 
