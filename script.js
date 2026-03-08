@@ -201,27 +201,49 @@ function exportarYWhatsApp() {
 }
 
 async function compartirImagen() {
+
   const tarjeta = document.getElementById("tarjeta");
 
-  const canvas = await html2canvas(tarjeta);
+  const wrapper = tarjeta;
+
+  const originalOverflow = wrapper.style.overflow;
+  const originalWidth = wrapper.style.width;
+
+  wrapper.style.overflow = "visible";
+  wrapper.style.width = wrapper.scrollWidth + "px";
+
+  const canvas = await html2canvas(wrapper, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: "#ffffff"
+  });
+
+  wrapper.style.overflow = originalOverflow;
+  wrapper.style.width = originalWidth;
 
   canvas.toBlob(async (blob) => {
+
     const file = new File([blob], "pedido.png", { type: "image/png" });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: "Pedido",
-          text: "Pedido generado desde la app",
-        });
-      } catch (error) {
-        console.log("Compartir cancelado", error);
-      }
+
+      await navigator.share({
+        files: [file],
+        title: "Pedido",
+        text: "Pedido generado desde la app"
+      });
+
     } else {
-      alert("Tu navegador no permite compartir archivos");
+
+      const link = document.createElement("a");
+      link.download = "pedido.png";
+      link.href = canvas.toDataURL();
+      link.click();
+
     }
+
   });
+
 }
 
 function detectarTipos() {
