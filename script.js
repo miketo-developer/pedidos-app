@@ -102,7 +102,16 @@ function generarPedido() {
   `;
 */
 
-  let columnas = Object.keys(filas[0]);
+const columnas = [
+"FePrefEnt.",
+"Solic.",
+"Solicitante",
+"Material",
+"Número de material",
+"Ctd pedido UMV"
+];
+
+  //let columnas = Object.keys(filas[0]);
 
   let html = `
 <div class="tabla-wrapper" id="tarjeta">
@@ -112,33 +121,27 @@ function generarPedido() {
 <tr>
 `;
 
-  columnas.forEach((col) => {
-    html += `<th>${col}</th>`;
-  });
+columnas.forEach(col => {
+  html += `<th>${col}</th>`;
+});
 
-  html += `
-  </tr>
-    </thead>
-  <tbody>
+html += `
+</tr>
+</thead>
+<tbody>
 `;
 
-  filas.forEach((fila) => {
-    html += "<tr>";
+  filas.forEach(fila => {
 
-    columnas.forEach((col) => {
-      html += `<td>${fila[col] ?? ""}</td>`;
-    });
+  html += "<tr>";
 
-    html += "</tr>";
+  columnas.forEach(col => {
+    html += `<td>${fila[col] ?? ""}</td>`;
   });
 
-  html += `
-  </tbody>
-    </table>
-    </div>
+  html += "</tr>";
 
-  <button class="exportar" onclick="compartirImagen()">📲 Compartir imagen</button>
-`;
+});
 
   /*
   filas.forEach((r) => {
@@ -154,11 +157,22 @@ function generarPedido() {
 
   // <button class="exportar" onclick="exportar()">📸 Exportar imagen</button>
   // <button class="exportar" onclick="exportarYWhatsApp()">📸 Exportar y abrir WhatsApp</button>
+  
+  html += `
+</tbody>
+</table>
+</div>
+
+<button class="exportar" onclick="compartirImagen()">📲 Compartir imagen</button>
+`;
+
+  /*
   html += `</div>
     <button class="exportar" onclick="compartirImagen()">📲 Compartir imagen</button>
   `;
 
   document.getElementById("resultado").innerHTML = html;
+  */
 }
 
 function exportar() {
