@@ -160,113 +160,114 @@ function generarPedido() {
   contenedorResultado.innerHTML = html;
 }
 
-// --- Captura y Compartición Definitiva (Técnica del iframe) ---
+
+
 
 async function compartirImagen() {
-  // 1. Obtener la tabla visible para extraer los datos
-  const tablaVisible = document.querySelector("#tablaParaUsuario table");
-  if (!tablaVisible) { alert("Primero genera un pedido."); return; }
+  const tabla = document.querySelector("#tablaParaUsuario table");
+  if (!tabla) { alert("Primero genera un pedido."); return; }
 
-  // Mostrar indicador de carga (opcional pero recomendado)
-  const botonExportar = document.querySelector(".exportar");
-  const textoOriginal = botonExportar.innerText;
-  botonExportar.innerText = "⏳ Generando imagen completa...";
-  botonExportar.disabled = true;
+  // 1. Extraer datos reales de la tabla
+  const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+  const encabezados = Array.from(tabla.querySelectorAll("thead th")).map(th => th.innerText);
+  
+  const datos = filas.map(tr => 
+    Array.from(tr.querySelectorAll("td")).map(td => td.innerText)
+  );
 
-  try {
-    // 2. Generar el HTML de la tabla para la captura (con estilos incrustados y NUEVO COLOR)
-    const filasHtml = Array.from(tablaVisible.querySelectorAll("tbody tr")).map(tr => tr.innerHTML).join('</tr><tr>');
-    const encabezadosHtml = Array.from(tablaVisible.querySelectorAll("thead th")).map(th => th.innerHTML).join('</th><th>');
+  // 2. Configuración de dibujo (Ajusta estos valores si quieres celdas más anchas)
+  const padding = 15;
+  const altoFila = 45;
+  const anchosColumnas = [120, 100, 250, 250, 150, 100]; // Ancho para cada columna
+  const anchoTotal = anchosColumnas.reduce((a, b) => a + b, 0);
+  const altoTotal = (datos.length + 1) * altoFila;
 
-    const htmlContenido = `
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          body { font-family: system-ui, sans-serif; background: white; margin: 0; padding: 20px; }
-          table { border-collapse: collapse; width: auto; min-width: 800px; font-size: 16px; table-layout: auto; }
-          th { background: #26303a; color: white; padding: 12px; text-align: left; border: 1px solid #26303a; }
-          td { border: 1px solid #eee; padding: 10px; white-space: nowrap; }
-          tr:nth-child(even) { background: #f8f9fa; }
-          /* Asegurar que el contenedor del iframe no corte nada */
-          html, body { height: auto; overflow: visible; }
-        </style>
-      </head>
-      <body>
-        <table>
-          <thead><tr><th>${encabezadosHtml}</th></tr></thead>
-          <tbody><tr>${filasHtml}</tr></tbody>
-        </table>
-      </body>
-      </html>
-    `;
+  // 3. Crear el Canvas físico
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
-    // 3. Crear un iframe invisible
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    iframe.style.visibility = 'hidden';
-    document.body.appendChild(iframe);
+  // Ajustar resolución para que se vea nítido (Retina/High DPI)
+  const escala = 2;
+  canvas.width = anchoTotal * escala;
+  canvas.height = altoTotal * escala;
+  ctx.scale(escala, escala);
 
-    // 4. Inyectar el HTML en el iframe
-    const doc = iframe.contentWindow.document;
-    doc.open();
-    doc.write(htmlContenido);
-    doc.close();
+  // Fondo blanco total
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, anchoTotal, altoTotal);
 
-    // 5. Esperar a que el contenido del iframe se renderice
-    await new Promise(resolve => iframe.onload = resolve);
+  // --- DIBUJAR ENCABEZADO ---
+  ctx.fillStyle = "#26303a"; // EL COLOR DE CONFIRMACIÓN
+  ctx.fillRect(0, 0, anchoTotal, altoFila);
+  
+  ctx.font = "bold 14px Arial";
+  ctx.fillStyle = "white";
+  ctx.textBaseline = "middle";
 
-    // 6. Capturar el cuerpo del iframe (que contiene la tabla completa)
-    const bodyIframe = iframe.contentWindow.document.body;
+  let xActual = 0;
+  encabezados.forEach((texto, i) => {
+    ctx.fillText(texto, xActual + padding, altoFila / 2);
+    xActual += anchosColumnas[i];
+  });
+
+  // --- DIBUJAR FILAS ---
+  ctx.font = "14px Arial";
+  
+  datos.forEach((fila, numFila) => {
+    const y = (numFila + 1) * altoFila;
     
-    const canvas = await html2canvas(bodyIframe, {
-      scale: 2, // Alta calidad
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-      // Al capturar el body del iframe, html2canvas toma el tamaño real del contenido
-    });
+    // Color de fondo cebra
+    if (numFila % 2 !== 0) {
+      ctx.fillStyle = "#f8f9fa";
+      ctx.fillRect(0, y, anchoTotal, altoFila);
+    }
 
-    // 7. Limpiar el DOM borrando el iframe
-    document.body.removeChild(iframe);
+    // Línea divisoria inferior
+    ctx.strokeStyle = "#eeeeee";
+    ctx.beginPath();
+    ctx.moveTo(0, y + altoFila);
+    ctx.lineTo(anchoTotal, y + altoFila);
+    ctx.stroke();
 
-    // 8. Convertir a Blob y Compartir
-    canvas.toBlob(async (blob) => {
-      if (!blob) { throw new Error("No se pudo generar el Blob de la imagen."); }
-      
-      const file = new File([blob], "pedido-completo.png", { type: "image/png" });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: "Pedido Completo",
-            text: "Aquí está el resumen del pedido generado desde la app."
-          });
-        } catch (shareError) {
-          console.log("Compartir cancelado o fallido:", shareError);
-          // Si falla el share nativo, intentamos descarga
-          descargarCanvas(canvas);
+    ctx.fillStyle = "#333333";
+    xActual = 0;
+    fila.forEach((celda, i) => {
+      // Truncar texto si es muy largo para la celda
+      let textoCortado = celda;
+      if (ctx.measureText(textoCortado).width > anchosColumnas[i] - padding * 2) {
+        while (ctx.measureText(textoCortado + "...").width > anchosColumnas[i] - padding * 2) {
+          textoCortado = textoCortado.slice(0, -1);
         }
-      } else {
-        alert("Tu navegador no soporta la función nativa de compartir archivos. Se descargará la imagen.");
-        descargarCanvas(canvas);
+        textoCortado += "...";
       }
-    }, "image/png");
+      
+      ctx.fillText(textoCortado, xActual + padding, y + (altoFila / 2));
+      xActual += anchosColumnas[i];
+    });
+  });
 
-  } catch (error) {
-    console.error("Error crítico durante la captura:", error);
-    alert("Hubo un error al generar la imagen completa. Por favor, inténtalo de nuevo.");
-  } finally {
-    // Restaurar estado del botón
-    botonExportar.innerText = textoOriginal;
-    botonExportar.disabled = false;
-  }
+  // 4. Convertir a imagen y compartir
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], "pedido_completo.png", { type: "image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: "Pedido Completo",
+        text: "Resumen de pedido generado exitosamente."
+      });
+    } else {
+      const link = document.createElement("a");
+      link.download = "pedido_completo.png";
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+  }, "image/png");
 }
+
+
+
+
 
 // Función auxiliar para descargar la imagen si navigator.share falla
 function descargarCanvas(canvas) {
