@@ -170,9 +170,9 @@ html += `
   html += `</div>
     <button class="exportar" onclick="compartirImagen()">📲 Compartir imagen</button>
   `;
-
+*/
   document.getElementById("resultado").innerHTML = html;
-  */
+  
 }
 
 function exportar() {
