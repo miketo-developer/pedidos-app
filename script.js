@@ -200,30 +200,32 @@ function exportarYWhatsApp() {
   });
 }
 
-/* Se modifica método para tratar de capturar toda la tabla en una imagen*/
+/* Nuevo intento para tratar de capturar toda la tabla en una imagen. 
+Poner la tabla fuera del viewport */
 async function compartirImagen() {
 
-  const wrapper = document.getElementById("tarjeta");
-  const tabla = wrapper.querySelector("table");
+  const tablaOriginal = document.querySelector("#tarjeta table");
 
-  const originalOverflow = wrapper.style.overflow;
-  const originalWidth = wrapper.style.width;
+  const clon = tablaOriginal.cloneNode(true);
 
-  wrapper.style.overflow = "visible";
-  wrapper.style.width = tabla.scrollWidth + "px";
+  const contenedor = document.createElement("div");
 
-  await new Promise(resolve => setTimeout(resolve, 200));
+  contenedor.style.position = "fixed";
+  contenedor.style.left = "-10000px";
+  contenedor.style.top = "0";
+  contenedor.style.background = "white";
+  contenedor.style.padding = "20px";
 
-  const canvas = await html2canvas(tabla, {
+  contenedor.appendChild(clon);
+
+  document.body.appendChild(contenedor);
+
+  const canvas = await html2canvas(clon, {
     scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-    width: tabla.scrollWidth,
-    height: tabla.scrollHeight
+    backgroundColor: "#ffffff"
   });
 
-  wrapper.style.overflow = originalOverflow;
-  wrapper.style.width = originalWidth;
+  document.body.removeChild(contenedor);
 
   canvas.toBlob(async (blob) => {
 
@@ -247,6 +249,7 @@ async function compartirImagen() {
     }
 
   });
+
 }
 
 function detectarTipos() {
