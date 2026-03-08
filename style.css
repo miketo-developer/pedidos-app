@@ -150,6 +150,7 @@ button {
   border-radius: 12px;
   overflow-x: auto;
   max-width:100%;
+  display:inline-block;
 }
 
 .tabla-pedido {

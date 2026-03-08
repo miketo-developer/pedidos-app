@@ -202,20 +202,23 @@ function exportarYWhatsApp() {
 
 async function compartirImagen() {
 
-  const tarjeta = document.getElementById("tarjeta");
-
-  const wrapper = tarjeta;
+  const wrapper = document.getElementById("tarjeta");
+  const tabla = wrapper.querySelector("table");
 
   const originalOverflow = wrapper.style.overflow;
   const originalWidth = wrapper.style.width;
 
   wrapper.style.overflow = "visible";
-  wrapper.style.width = wrapper.scrollWidth + "px";
+  wrapper.style.width = tabla.scrollWidth + "px";
 
-  const canvas = await html2canvas(wrapper, {
+  await new Promise(resolve => setTimeout(resolve, 200));
+
+  const canvas = await html2canvas(tabla, {
     scale: 2,
     useCORS: true,
-    backgroundColor: "#ffffff"
+    backgroundColor: "#ffffff",
+    width: tabla.scrollWidth,
+    height: tabla.scrollHeight
   });
 
   wrapper.style.overflow = originalOverflow;
@@ -243,7 +246,6 @@ async function compartirImagen() {
     }
 
   });
-
 }
 
 function detectarTipos() {
