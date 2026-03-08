@@ -200,6 +200,7 @@ function exportarYWhatsApp() {
   });
 }
 
+/* Se modifica método para tratar de capturar toda la tabla en una imagen*/
 async function compartirImagen() {
 
   const wrapper = document.getElementById("tarjeta");
