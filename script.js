@@ -164,106 +164,108 @@ function generarPedido() {
 
 
 async function compartirImagen() {
-  const tabla = document.querySelector("#tablaParaUsuario table");
-  if (!tabla) { alert("Primero genera un pedido."); return; }
+  const tablaOriginal = document.querySelector("#tablaParaUsuario table");
+  if (!tablaOriginal) { alert("Genera un pedido primero"); return; }
 
-  // 1. Extraer datos reales de la tabla
-  const filas = Array.from(tabla.querySelectorAll("tbody tr"));
-  const encabezados = Array.from(tabla.querySelectorAll("thead th")).map(th => th.innerText);
-  
-  const datos = filas.map(tr => 
-    Array.from(tr.querySelectorAll("td")).map(td => td.innerText)
-  );
+  // 1. Extraer los datos actuales
+  const filasHtml = tablaOriginal.querySelector("tbody").innerHTML;
+  const columnas = [
+    "FePrefEnt.", "Solic.", "Solicitante", 
+    "Material", "Número de material", "Ctd pedido UMV"
+  ];
 
-  // 2. Configuración de dibujo (Ajusta estos valores si quieres celdas más anchas)
-  const padding = 15;
-  const altoFila = 45;
-  const anchosColumnas = [120, 100, 250, 250, 150, 100]; // Ancho para cada columna
-  const anchoTotal = anchosColumnas.reduce((a, b) => a + b, 0);
-  const altoTotal = (datos.length + 1) * altoFila;
-
-  // 3. Crear el Canvas físico
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-
-  // Ajustar resolución para que se vea nítido (Retina/High DPI)
-  const escala = 2;
-  canvas.width = anchoTotal * escala;
-  canvas.height = altoTotal * escala;
-  ctx.scale(escala, escala);
-
-  // Fondo blanco total
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, anchoTotal, altoTotal);
-
-  // --- DIBUJAR ENCABEZADO ---
-  ctx.fillStyle = "#26303a"; // EL COLOR DE CONFIRMACIÓN
-  ctx.fillRect(0, 0, anchoTotal, altoFila);
-  
-  ctx.font = "bold 14px Arial";
-  ctx.fillStyle = "white";
-  ctx.textBaseline = "middle";
-
-  let xActual = 0;
-  encabezados.forEach((texto, i) => {
-    ctx.fillText(texto, xActual + padding, altoFila / 2);
-    xActual += anchosColumnas[i];
-  });
-
-  // --- DIBUJAR FILAS ---
-  ctx.font = "14px Arial";
-  
-  datos.forEach((fila, numFila) => {
-    const y = (numFila + 1) * altoFila;
-    
-    // Color de fondo cebra
-    if (numFila % 2 !== 0) {
-      ctx.fillStyle = "#f8f9fa";
-      ctx.fillRect(0, y, anchoTotal, altoFila);
-    }
-
-    // Línea divisoria inferior
-    ctx.strokeStyle = "#eeeeee";
-    ctx.beginPath();
-    ctx.moveTo(0, y + altoFila);
-    ctx.lineTo(anchoTotal, y + altoFila);
-    ctx.stroke();
-
-    ctx.fillStyle = "#333333";
-    xActual = 0;
-    fila.forEach((celda, i) => {
-      // Truncar texto si es muy largo para la celda
-      let textoCortado = celda;
-      if (ctx.measureText(textoCortado).width > anchosColumnas[i] - padding * 2) {
-        while (ctx.measureText(textoCortado + "...").width > anchosColumnas[i] - padding * 2) {
-          textoCortado = textoCortado.slice(0, -1);
+  // 2. Crear el contenido de la "página de captura"
+  // Usamos estilos que fuerzan a la tabla a NO tener scroll y ser gigante
+  const htmlCaptura = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+      <style>
+        body { margin: 0; padding: 20px; background: white; width: fit-content; }
+        table { 
+          border-collapse: collapse; 
+          width: 1200px; /* Forzamos un ancho grande para que no haya saltos de línea */
+          font-family: Arial, sans-serif;
+          border: 4px solid #26303a; /* Borde para confirmar que es esta versión */
         }
-        textoCortado += "...";
+        th { background: #26303a; color: white; padding: 15px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #eee; white-space: nowrap; }
+        tr:nth-child(even) { background: #f9f9f9; }
+      </style>
+    </head>
+    <body>
+      <div id="captura-target">
+        <table>
+          <thead>
+            <tr>${columnas.map(c => `<th>${c}</th>`).join('')}</tr>
+          </thead>
+          <tbody>
+            ${filasHtml}
+          </tbody>
+        </table>
+      </div>
+      <script>
+        window.onload = async () => {
+          // Pequeña pausa para asegurar renderizado
+          await new Promise(r => setTimeout(r, 500));
+          const element = document.getElementById('captura-target');
+          
+          html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            width: element.offsetWidth,
+            height: element.offsetHeight
+          }).then(canvas => {
+            canvas.toBlob(blob => {
+              window.parent.postMessage({ type: 'CAPTURA_LISTA', blob: blob }, '*');
+            }, 'image/png');
+          });
+        };
+      </script>
+    </body>
+    </html>
+  `;
+
+  // 3. Crear un iframe temporal pero VISIBLE (al fondo de la página)
+  // Lo ponemos visible pero muy abajo para que el navegador lo renderice completo
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.bottom = '-10000px'; 
+  iframe.style.width = '1300px'; // Más ancho que la tabla
+  iframe.style.height = '5000px'; // Suficiente para cualquier pedido
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(htmlCaptura);
+  doc.close();
+
+  // 4. Escuchar la respuesta del iframe
+  window.addEventListener('message', async function handler(event) {
+    if (event.data.type === 'CAPTURA_LISTA') {
+      window.removeEventListener('message', handler);
+      const blob = event.data.blob;
+      const file = new File([blob], "pedido_completo.png", { type: "image/png" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "Pedido Completo",
+          text: "Enviando pedido desde PWA"
+        });
+      } else {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "pedido.png";
+        link.click();
       }
-      
-      ctx.fillText(textoCortado, xActual + padding, y + (altoFila / 2));
-      xActual += anchosColumnas[i];
-    });
-  });
-
-  // 4. Convertir a imagen y compartir
-  canvas.toBlob(async (blob) => {
-    const file = new File([blob], "pedido_completo.png", { type: "image/png" });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: "Pedido Completo",
-        text: "Resumen de pedido generado exitosamente."
-      });
-    } else {
-      const link = document.createElement("a");
-      link.download = "pedido_completo.png";
-      link.href = canvas.toDataURL();
-      link.click();
+      document.body.removeChild(iframe);
     }
-  }, "image/png");
+  });
 }
+
 
 
 
