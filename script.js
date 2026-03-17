@@ -165,105 +165,96 @@ function generarPedido() {
 
 async function compartirImagen() {
   const tablaOriginal = document.querySelector("#tablaParaUsuario table");
-  if (!tablaOriginal) { alert("Genera un pedido primero"); return; }
+  if (!tablaOriginal) { alert("Primero genera un pedido."); return; }
 
-  // 1. Extraer los datos actuales
   const filasHtml = tablaOriginal.querySelector("tbody").innerHTML;
-  const columnas = [
-    "FePrefEnt.", "Solic.", "Solicitante", 
-    "Material", "Número de material", "Ctd pedido UMV"
-  ];
+  
+  // 1. Abrir la nueva pestaña
+  const nuevaVentana = window.open("", "_blank");
+  if (!nuevaVentana) {
+    alert("Por favor, permite las ventanas emergentes para exportar la imagen.");
+    return;
+  }
 
-  // 2. Crear el contenido de la "página de captura"
-  // Usamos estilos que fuerzan a la tabla a NO tener scroll y ser gigante
-  const htmlCaptura = `
+  // 2. Escribir el contenido en la nueva pestaña
+  // Usamos el color #26303a para confirmar que es la versión nueva
+  nuevaVentana.document.write(`
     <!DOCTYPE html>
-    <html>
+    <html lang="es">
     <head>
       <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Capturando Pedido...</title>
       <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
       <style>
-        body { margin: 0; padding: 20px; background: white; width: fit-content; }
-        table { 
-          border-collapse: collapse; 
-          width: 1200px; /* Forzamos un ancho grande para que no haya saltos de línea */
-          font-family: Arial, sans-serif;
-          border: 4px solid #26303a; /* Borde para confirmar que es esta versión */
-        }
-        th { background: #26303a; color: white; padding: 15px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #eee; white-space: nowrap; }
-        tr:nth-child(even) { background: #f9f9f9; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; }
+        .instrucciones { background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; max-width: 600px; border: 1px solid #ffeeba; }
+        #captura-area { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: fit-content; }
+        table { border-collapse: collapse; min-width: 800px; }
+        th { background: #26303a; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
+        tr:nth-child(even) { background: #f8f9fa; }
+        .btn-ready { background: #25d366; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); }
       </style>
     </head>
     <body>
-      <div id="captura-target">
+      <div class="instrucciones">
+        <b>Paso final:</b> Verifica que la tabla se vea completa y presiona el botón verde para enviar a WhatsApp.
+      </div>
+
+      <div id="captura-area">
         <table>
           <thead>
-            <tr>${columnas.map(c => `<th>${c}</th>`).join('')}</tr>
+            <tr>
+              <th>FePrefEnt.</th><th>Solic.</th><th>Solicitante</th>
+              <th>Material</th><th>Número de material</th><th>Ctd pedido UMV</th>
+            </tr>
           </thead>
-          <tbody>
-            ${filasHtml}
-          </tbody>
+          <tbody>${filasHtml}</tbody>
         </table>
       </div>
+
+      <button id="btnCaptura" class="btn-ready">📸 ENVIAR A WHATSAPP</button>
+
       <script>
-        window.onload = async () => {
-          // Pequeña pausa para asegurar renderizado
-          await new Promise(r => setTimeout(r, 500));
-          const element = document.getElementById('captura-target');
+        document.getElementById('btnCaptura').onclick = async function() {
+          this.innerText = "Procesando...";
+          this.disabled = true;
           
-          html2canvas(element, {
+          const area = document.getElementById('captura-area');
+          const canvas = await html2canvas(area, {
             scale: 2,
             useCORS: true,
-            width: element.offsetWidth,
-            height: element.offsetHeight
-          }).then(canvas => {
-            canvas.toBlob(blob => {
-              window.parent.postMessage({ type: 'CAPTURA_LISTA', blob: blob }, '*');
-            }, 'image/png');
+            logging: false,
+            width: area.scrollWidth,
+            height: area.scrollHeight
           });
+
+          canvas.toBlob(async (blob) => {
+            const file = new File([blob], "pedido.png", { type: "image/png" });
+            
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: 'Pedido',
+                text: 'Resumen de pedido'
+              });
+              window.close(); // Cierra la pestaña tras compartir
+            } else {
+              // Fallback descarga
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(blob);
+              link.download = "pedido.png";
+              link.click();
+              alert("Imagen descargada. Ahora puedes adjuntarla en WhatsApp.");
+            }
+          }, 'image/png');
         };
       </script>
     </body>
     </html>
-  `;
-
-  // 3. Crear un iframe temporal pero VISIBLE (al fondo de la página)
-  // Lo ponemos visible pero muy abajo para que el navegador lo renderice completo
-  const iframe = document.createElement('iframe');
-  iframe.style.position = 'fixed';
-  iframe.style.bottom = '-10000px'; 
-  iframe.style.width = '1300px'; // Más ancho que la tabla
-  iframe.style.height = '5000px'; // Suficiente para cualquier pedido
-  document.body.appendChild(iframe);
-
-  const doc = iframe.contentWindow.document;
-  doc.open();
-  doc.write(htmlCaptura);
-  doc.close();
-
-  // 4. Escuchar la respuesta del iframe
-  window.addEventListener('message', async function handler(event) {
-    if (event.data.type === 'CAPTURA_LISTA') {
-      window.removeEventListener('message', handler);
-      const blob = event.data.blob;
-      const file = new File([blob], "pedido_completo.png", { type: "image/png" });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: "Pedido Completo",
-          text: "Enviando pedido desde PWA"
-        });
-      } else {
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "pedido.png";
-        link.click();
-      }
-      document.body.removeChild(iframe);
-    }
-  });
+  `);
+  nuevaVentana.document.close();
 }
 
 
