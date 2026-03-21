@@ -1,3 +1,216 @@
+/**
+ * VARIABLES GLOBALES Y CONFIGURACIÓN
+ */
+let datos = [];
+const TIPOS_VALIDOS = ["HVO", "PER", "COC"];
+const COLUMNAS_A_MOSTRAR = [
+  "FePrefEnt.",
+  "Solic.",
+  "Solicitante",
+  "Material",
+  "Número de material",
+  "Ctd pedido UMV"
+];
+
+/**
+ * Listener para detectar la carga del archivo Excel.
+ */
+document.getElementById("archivo").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (file) procesarArchivo(file);
+});
+
+/**
+ * Lee el archivo Excel y convierte la primera hoja en un objeto JSON usable.
+ * @param {File} file - El archivo seleccionado por el usuario.
+ */
+function procesarArchivo(file) {
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      datos = XLSX.utils.sheet_to_json(firstSheet);
+
+      if (datos.length > 0) {
+        detectarFechas();
+        detectarTipos();
+        alert(`Éxito: ${datos.length} filas cargadas.`);
+      }
+    } catch (e) {
+      alert("Error al leer el Excel. Verifica el formato.");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/**
+ * Extrae las fechas únicas de la columna 'FePrefEnt.' para llenar el filtro.
+ */
+function detectarFechas() {
+  const fechas = [...new Set(datos.map(r => r["FePrefEnt."]).filter(Boolean))];
+  const cont = document.getElementById("listaFechas");
+  cont.innerHTML = fechas.map(f => `
+    <label class="opcion">
+      <input type="radio" name="fecha" value="${f}"> <span>${f}</span>
+    </label>
+  `).join('');
+}
+
+/**
+ * Extrae los tipos de producto (HVO, PER, COC) del final del nombre del Solicitante.
+ */
+function detectarTipos() {
+  const tiposPresentes = new Set();
+  datos.forEach(r => {
+    if (!r["Solicitante"]) return;
+    const partes = r["Solicitante"].split(" ");
+    const t = partes[partes.length - 1];
+    if (TIPOS_VALIDOS.includes(t)) tiposPresentes.add(t);
+  });
+
+  const cont = document.getElementById("listaTipos");
+  cont.innerHTML = [...tiposPresentes].map(t => `
+    <label class="opcion">
+      <input type="checkbox" name="tipo" value="${t}" checked> <span>${t}</span>
+    </label>
+  `).join('');
+}
+
+/**
+ * Asigna rápidamente un número de tienda al campo de búsqueda.
+ */
+function setTienda(t) {
+  document.getElementById("busquedaTienda").value = t;
+}
+
+/**
+ * Filtra los datos y activa la vista de pantalla completa para captura.
+ */
+function generarPedido() {
+  const tienda = document.getElementById("busquedaTienda").value.trim();
+  const fechaSel = document.querySelector('input[name="fecha"]:checked');
+  const tiposSel = [...document.querySelectorAll('input[name="tipo"]:checked')].map(e => e.value);
+
+  if (!tienda || !fechaSel || tiposSel.length === 0) {
+    alert("Por favor completa los filtros.");
+    return;
+  }
+
+  const filtrados = datos.filter(r => {
+    if (!r["Solicitante"] || !r["FePrefEnt."]) return false;
+    const tipo = r["Solicitante"].split(" ").pop();
+    return r["Solicitante"].includes(tienda) && 
+           r["FePrefEnt."] == fechaSel.value && 
+           tiposSel.includes(tipo);
+  });
+
+  if (filtrados.length === 0) return alert("No hay datos para esa selección.");
+  
+  mostrarVistaCaptura(filtrados, tienda);
+}
+
+/**
+ * Crea y muestra la "actividad" de pantalla completa con la tabla final.
+ * @param {Array} filas - Datos ya filtrados.
+ * @param {String} nTienda - Número de tienda para el mensaje de WhatsApp.
+ */
+function mostrarVistaCaptura(filas, nTienda) {
+  const vista = document.getElementById("vista-captura");
+  document.querySelector(".app").style.display = "none";
+  vista.style.display = "block";
+
+  vista.innerHTML = `
+    <div class="toolbar-captura">
+      <button class="btn-regresar" onclick="regresar()">⬅️ Filtros</button>
+      <button class="btn-whatsapp" id="btnShare">📸 ENVIAR A WHATSAPP</button>
+    </div>
+    <div class="contenedor-render">
+      <div id="target-foto" style="background: white; padding: 20px;">
+        <table class="tabla-final">
+          <thead>
+            <tr>${COLUMNAS_A_MOSTRAR.map(c => `<th>${c}</th>`).join('')}</tr>
+          </thead>
+          <tbody>
+            ${filas.map(f => `<tr>${COLUMNAS_A_MOSTRAR.map(col => `<td>${f[col] ?? ""}</td>`).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btnShare").onclick = () => procesarCaptura(nTienda);
+}
+
+/**
+ * Genera la imagen con html2canvas y dispara el menú de compartir.
+ * @param {String} nTienda - El número de tienda en formato negritas.
+ */
+async function procesarCaptura(nTienda) {
+  const btn = document.getElementById("btnShare");
+  btn.innerText = "⏳ Generando...";
+  btn.disabled = true;
+
+  const target = document.getElementById("target-foto");
+  try {
+    const canvas = await html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      width: target.scrollWidth,
+      height: target.scrollHeight
+    });
+
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], "pedido.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          text: `*${nTienda}*` // <-- AQUÍ SE ENVÍA LA TIENDA EN NEGRITAS
+        });
+      } else {
+        const link = document.createElement("a");
+        link.download = `Pedido_${nTienda}.png`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+      }
+      btn.innerText = "📸 ENVIAR A WHATSAPP";
+      btn.disabled = false;
+    });
+  } catch (e) {
+    alert("Error al crear imagen.");
+    btn.disabled = false;
+  }
+}
+
+/**
+ * Cierra la vista de captura y regresa a los filtros principales.
+ */
+function regresar() {
+  document.querySelector(".app").style.display = "block";
+  document.getElementById("vista-captura").style.display = "none";
+}
+
+/**
+ * SERVICE WORKER REGISTRATION (PWA)
+ */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(console.error);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 // script.js
 let datos = [];
 const TIPOS_VALIDOS = ["HVO", "PER", "COC"];
@@ -104,7 +317,7 @@ function setTienda(t) {
 
 
 
-// ************************************************ //
+// ************************************************ 
 // --- Generación de Pedido (Vista Usuario) ---
 // Reemplaza estas funciones en tu script.js
 
@@ -211,216 +424,7 @@ function regresarPrincipal() {
 
 
 
-// ************************************************ //
-
-
-
-/*
-function abrirVentanaCaptura(filas) {
-  const nuevaVentana = window.open("", "_blank");
-  if (!nuevaVentana) {
-    alert("Por favor, permite las ventanas emergentes.");
-    return;
-  }
-
-  // Construir filas de la tabla
-  const cuerpoTabla = filas.map(fila => `
-    <tr>
-      ${COLUMNAS_A_MOSTRAR.map(col => `<td>${fila[col] ?? ""}</td>`).join('')}
-    </tr>
-  `).join('');
-
-  nuevaVentana.document.write(`
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Vista de Impresión - Pedido</title>
-      <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-      <style>
-        body { 
-          font-family: Arial, sans-serif; 
-          margin: 0; 
-          padding: 0; 
-          background: #26303a; 
-          display: flex; 
-          flex-direction: column; 
-          align-items: center;
-        }
-        /* Contenedor que obliga a la tabla a expandirse todo lo necesario 
-        .full-page-container {
-          padding: 40px;
-          width: fit-content;
-          min-width: 100%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          box-sizing: border-box;
-        }
-        .toolbar {
-          position: sticky;
-          top: 0;
-          width: 100%;
-          background: #1a2229;
-          padding: 15px;
-          display: flex;
-          justify-content: center;
-          gap: 20px;
-          z-index: 1000;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-        .btn {
-          padding: 12px 25px;
-          border-radius: 8px;
-          border: none;
-          font-weight: bold;
-          cursor: pointer;
-          font-size: 16px;
-        }
-        .btn-capture { background: #25d366; color: white; }
-        .btn-back { background: #546e7a; color: white; }
-        
-        #area-render {
-          background: white;
-          padding: 25px;
-          margin-top: 20px;
-          box-shadow: 0 0 20px rgba(0,0,0,0.3);
-        }
-        table {
-          border-collapse: collapse;
-          width: auto; /* IMPORTANTE: No limitada al 100% 
-          font-size: 16px;
-        }
-        th { background: #26303a; color: white; padding: 15px; text-align: left; white-space: nowrap; }
-        td { padding: 12px; border-bottom: 1px solid #eee; white-space: nowrap; color: #333; }
-        tr:nth-child(even) { background: #f8f9fa; }
-      </style>
-    </head>
-    <body>
-      <div class="toolbar">
-        <button class="btn btn-back" onclick="window.close()">⬅️ Volver</button>
-        <button class="btn btn-capture" id="btnShare">📸 Compartir en WhatsApp</button>
-      </div>
-
-      <div class="full-page-container">
-        <div id="area-render">
-          <table>
-            <thead>
-              <tr>${COLUMNAS_A_MOSTRAR.map(c => `<th>\${c}</th>`).join('')}</tr>
-            </thead>
-            <tbody>
-              ${cuerpoTabla}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <script>
-        document.getElementById('btnShare').onclick = async function() {
-          const btn = this;
-          btn.innerText = "⏳ Generando...";
-          btn.disabled = true;
-
-          const area = document.getElementById('area-render');
-          
-          try {
-            const canvas = await html2canvas(area, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: "#ffffff",
-              // Forzamos el tamaño real del contenido
-              width: area.scrollWidth,
-              height: area.scrollHeight
-            });
-
-            canvas.toBlob(async (blob) => {
-              const file = new File([blob], "pedido.png", { type: "image/png" });
-              if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                  files: [file],
-                  title: "Pedido",
-                  text: "Resumen de pedido completo"
-                });
-              } else {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = "pedido.png";
-                link.click();
-              }
-              btn.innerText = "📸 Compartir en WhatsApp";
-              btn.disabled = false;
-            }, 'image/png');
-          } catch (err) {
-            alert("Error al capturar: " + err);
-            btn.disabled = false;
-          }
-        };
-      <\/script>
-    </body>
-    </html>
-  `);
-  nuevaVentana.document.close();
-}
-
-function generarPedido() {
-  const tienda = document.getElementById("busquedaTienda").value.trim();
-  const fechaSel = document.querySelector('input[name="fecha"]:checked');
-  const tiposSeleccionados = [
-    ...document.querySelectorAll('input[name="tipo"]:checked'),
-  ].map((e) => e.value);
-
-  if (!tienda) { alert("Ingresa una tienda"); return; }
-  if (!fechaSel) { alert("Selecciona una fecha"); return; }
-  if (tiposSeleccionados.length === 0) { alert("Selecciona al menos un tipo de producto"); return; }
-
-  const fecha = fechaSel.value;
-
-  // Filtrado de datos
-  const filasFiltradas = datos.filter((r) => {
-    if (!r["Solicitante"] || !r["FePrefEnt."]) return false;
-    const partes = r["Solicitante"].split(" ");
-    const tipo = partes[partes.length - 1];
-
-    return (
-      r["Solicitante"].includes(tienda) &&
-      r["FePrefEnt."] == fecha &&
-      tiposSeleccionados.includes(tipo)
-    );
-  });
-
-  const contenedorResultado = document.getElementById("resultado");
-
-  if (filasFiltradas.length === 0) {
-    contenedorResultado.innerHTML = '<div class="card">Sin resultados para la búsqueda.</div>';
-    return;
-  }
-
-  // Renderizado de la tabla para el usuario
-  let html = `
-    <div class="tabla-wrapper" id="tablaParaUsuario">
-      <table class="tabla-pedido">
-        <thead>
-          <tr>
-            ${COLUMNAS_A_MOSTRAR.map(col => `<th>${col}</th>`).join('')}
-          </tr>
-        </thead>
-        <tbody>
-          ${filasFiltradas.map(fila => `
-            <tr>
-              ${COLUMNAS_A_MOSTRAR.map(col => `<td>${fila[col] ?? ""}</td>`).join('')}
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-    <button class="exportar" onclick="compartirImagen()">📲 Compartir imagen completa en WhatsApp</button>
-  `;
-
-  contenedorResultado.innerHTML = html;
-}
-*/
+// ************************************************ 
 
 
 
@@ -560,3 +564,4 @@ if ("launchQueue" in window) {
     procesarArchivo(file);
   });
 }
+*/

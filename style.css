@@ -1,7 +1,116 @@
-/* style.css */
 body {
   font-family: system-ui, -apple-system, sans-serif;
-  background: #c7dbfa;
+  background: #f7e8ad; /* Tu color preferido */
+  margin: 0;
+  padding: 15px;
+  color: #333;
+}
+
+.app { max-width: 500px; margin: auto; }
+h1 { text-align: center; font-size: 22px; color: #1a2229; }
+
+/* Tarjetas y Contenedores */
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.seccion-titulo { font-weight: bold; display: block; margin-bottom: 10px; }
+
+/* Elementos de Formulario */
+input, button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.btn-primario {
+  background: #1976d2;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
+
+.rapidas { display: flex; gap: 8px; margin-top: 5px; }
+.rapidas button { background: #546e7a; color: white; border: none; padding: 10px; }
+
+/* Filtros de lista */
+.opciones-lista { display: flex; flex-direction: column; gap: 5px; }
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+.opcion input { width: auto; margin: 0; }
+
+/* --- VISTA DE CAPTURA (OVERLAY) --- */
+#vista-captura {
+  position: absolute;
+  top: 0; left: 0; width: 100%; min-height: 100vh;
+  background: #26303a;
+  z-index: 9999;
+}
+
+.toolbar-captura {
+  position: sticky; top: 0;
+  background: #1a2229;
+  padding: 12px;
+  display: flex; gap: 10px;
+  z-index: 1000;
+}
+
+.btn-regresar { background: #455a64; color: white; width: auto; }
+.btn-whatsapp { background: #25d366; color: white; width: auto; flex-grow: 1; border: none; }
+
+.contenedor-render {
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.tabla-final {
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 800px;
+}
+
+.tabla-final th {
+  background: #26303a;
+  color: white;
+  padding: 12px;
+  text-align: left;
+}
+
+.tabla-final td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.tabla-final tr:nth-child(even) { background: #f8f9fa; }
+
+
+
+
+
+
+
+
+
+
+/* style.css 
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #adeef7;
   margin: 0;
   padding: 15px;
   color: #333;
@@ -18,7 +127,7 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* Estilos de inputs y botones */
+/* Estilos de inputs y botones 
 input, select, button {
   width: 100%;
   padding: 14px;
@@ -26,7 +135,7 @@ input, select, button {
   font-size: 16px;
   border-radius: 10px;
   border: 1px solid #ccc;
-  box-sizing: border-box; /* Crucial para el padding */
+  box-sizing: border-box; /* Crucial para el padding 
 }
 
 input:focus, select:focus {
@@ -51,7 +160,7 @@ button:active {
   transform: translateY(1px);
 }
 
-/* Secciones de filtros */
+/* Secciones de filtros 
 .fechas, .tipos {
   background: white;
   padding: 15px;
@@ -67,7 +176,7 @@ button:active {
   display: block;
 }
 
-/* Botones rápidos */
+/* Botones rápidos *
 .rapidas {
   display: flex;
   gap: 10px;
@@ -85,7 +194,7 @@ button:active {
   background: #455a64;
 }
 
-/* Lista de opciones (radio/checkbox) */
+/* Lista de opciones (radio/checkbox) *
 .opciones-lista {
   display: flex;
   flex-direction: column;
@@ -114,7 +223,7 @@ button:active {
   transform: scale(1.1);
 }
 
-/* Resultado y Tabla (lo que ve el usuario) */
+/* Resultado y Tabla (lo que ve el usuario) *
 #resultado {
   margin-top: 20px;
 }
@@ -127,23 +236,23 @@ button:active {
   padding: 15px;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  overflow-x: auto; /* Permite scroll horizontal en móvil */
+  overflow-x: auto; /* Permite scroll horizontal en móvil *
   -webkit-overflow-scrolling: touch;
 }
 
 .tabla-pedido {
   border-collapse: collapse;
   width: 100%;
-  min-width: 600px; /* Ancho mínimo para que no se amontone */
+  min-width: 600px; /* Ancho mínimo para que no se amontone *
   font-size: 14px;
 }
 
 .tabla-pedido th {
-  background: #26262c; /* NUEVO COLOR CONFIRMACIÓN */
+  background: #26262c; /* NUEVO COLOR CONFIRMACIÓN *
   color: white;
   padding: 12px 10px;
   text-align: left;
-  position: sticky; /* Opcional: encabezado fijo al hacer scroll */
+  position: sticky; /* Opcional: encabezado fijo al hacer scroll *
   top: 0;
 }
 
@@ -158,7 +267,7 @@ button:active {
 
 .exportar {
   margin-top: 15px;
-  background: #25d366; /* Color WhatsApp */
+  background: #25d366; /* Color WhatsApp *
   font-size: 18px;
   padding: 16px;
 }
@@ -167,16 +276,16 @@ button:active {
   background: #1da851;
 }
 
-/* Eliminamos estilos antiguos e innecesarios como .captura-area y .clon-para-captura */
+/* Eliminamos estilos antiguos e innecesarios como .captura-area y .clon-para-captura *
 
-/* Estilos para la Vista de Pantalla Completa (Pestaña Virtual) */
+/* Estilos para la Vista de Pantalla Completa (Pestaña Virtual) *
 #vista-captura {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   min-height: 100vh;
-  background: #26303a; /* Fondo oscuro de confirmación */
+  background: #26303a; /* Fondo oscuro de confirmación *
   z-index: 9999;
 }
 
@@ -204,7 +313,7 @@ button:active {
 
 .contenedor-render {
   padding: 20px;
-  overflow-x: auto; /* Permite ver la tabla ancha en el cel */
+  overflow-x: auto; /* Permite ver la tabla ancha en el cel *
   display: flex;
   justify-content: flex-start;
 }
@@ -212,7 +321,7 @@ button:active {
 #target-foto {
   background: white;
   padding: 20px;
-  width: fit-content; /* Obligatorio para que la foto salga completa */
+  width: fit-content; /* Obligatorio para que la foto salga completa *
 }
 
 .tabla-final {
@@ -235,291 +344,4 @@ button:active {
 }
 
 .tabla-final tr:nth-child(even) { background: #f8f9fa; }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-body {
-  font-family: system-ui;
-  background: #f2f4f7;
-  margin: 0;
-  padding: 15px;
-}
-
-.app {
-  max-width: 520px;
-  margin: auto;
-}
-
-h1 {
-  text-align: center;
-  font-size: 26px;
-}
-
-.tipos {
-  background: white;
-  padding: 12px;
-  border-radius: 12px;
-  margin-top: 12px;
-  font-size: 18px;
-}
-
-input,
-button {
-  width: 100%;
-  padding: 16px;
-  margin-top: 12px;
-  font-size: 18px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-}
-
-button {
-  background: #1976d2;
-  color: white;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.rapidas {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.rapidas button {
-  flex: 1;
-  background: #555;
-}
-
-.fechas {
-  background: white;
-  padding: 12px;
-  border-radius: 12px;
-  margin-top: 12px;
-  font-size: 18px;
-}
-
-.card {
-  background: white;
-  border-radius: 18px;
-  padding: 20px;
-  margin-top: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.header {
-  border-bottom: 2px solid #eee;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-}
-
-.titulo {
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.stats {
-  margin-top: 8px;
-  color: #555;
-  font-size: 16px;
-}
-
-.producto {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.material {
-  font-weight: bold;
-  font-size: 18px;
-}
-
-.codigo {
-  color: #666;
-  font-size: 16px;
-}
-
-.cantidad {
-  color: #1976d2;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.exportar {
-  margin-top: 15px;
-  background: #25d366;
-  font-size: 20px;
-}
-
-.opciones-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.opcion {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: #fafafa;
-  border-radius: 8px;
-  border: 1px solid #eee;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.opcion input {
-  transform: scale(1.2);
-  margin: 0;
-  width: auto;
-}
-
-.opcion:hover {
-  background: #f0f0f0;
-}
-
-
-/* Para la tabla *//*
-.tabla-wrapper {
-  background: white;
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 12px;
-  overflow-x: auto;
-  max-width:100%;
-}
-
-.tabla-pedido {
-  border-collapse: collapse;
-  width: 100%;
-  min-width: 700px;
-  font-size: 14px;
-}
-
-.tabla-pedido th {
-  background: #26303a;
-  color: white;
-  padding: 10px;
-  text-align: left;
-}
-
-.tabla-pedido td {
-  border-bottom: 1px solid #ddd;
-  padding: 8px;
-}
-
-.tabla-pedido tr:nth-child(even) {
-  background: #f5f7fa;
-}
-
-.tabla-pedido tr:hover {
-  background: #eef3ff;
-}
-
-/* Estilo especial para capturar la imagen de la tabla *//*
-.captura-area {
-  position: fixed;
-  left: -10000px;
-  top: 0;
-  background: white;
-  padding: 20px;
-}
-
-.captura-area table {
-  border-collapse: collapse;
-  font-size: 18px;
-}
-
-.captura-area th {
-  background: #26303a;
-  color: white;
-  padding: 10px;
-}
-
-.captura-area td {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-}
-
-
-/* Estilo para el contenedor de clonación invisible *//*
-.clon-para-captura {
-  position: absolute;
-  top: -9999px; /* Fuera de la vista *//*
-  left: -9999px;
-  width: auto !important; /* Forzar ancho automático *//*
-  height: auto !important; /* Forzar alto automático *//*
-  overflow: visible !important; /* Asegurar que no haya recortes *//*
-  display: block !important;
-  background: white; /* Fondo blanco para la imagen *//*
-  padding: 20px; /* Un poco de aire *//*
-}
-
-/* Asegurar que la tabla clonada se renderice a ancho completo *//*
-.clon-para-captura .tabla-pedido {
-  width: auto !important;
-  table-layout: auto !important;
-  min-width: 0 !important; /* Resetear min-width si lo tienes *//*
-}
-
-
-
-/* Estilos específicos para la tabla dentro del área de captura oculta *//*
-#area-captura-oculta .tabla-pedido {
-  width: auto !important; /* Forzar ancho automático, no 100% *//*
-  table-layout: auto !important;
-  min-width: 0 !important;
-  border-collapse: collapse;
-  font-size: 16px; /* Ajusta el tamaño de fuente si lo deseas para la imagen *//*
-  background: white;
-}
-
-#area-captura-oculta .tabla-pedido th {
-  background: #26303a; /* Asegurar el color en la captura *//*
-  color: white;
-  padding: 12px; /* Un poco más de padding para la imagen *//*
-  text-align: left;
-  white-space: nowrap; /* Evitar que los encabezados se rompan en líneas *//*
-}
-
-#area-captura-oculta .tabla-pedido td {
-  border-bottom: 1px solid #ddd;
-  padding: 10px;
-  white-space: nowrap; /* Evitar que el contenido de las celdas se rompa *//*
-}
-
-#area-captura-oculta .tabla-pedido tr:nth-child(even) {
-  background: #f5f7fa;
-}
 */
-
