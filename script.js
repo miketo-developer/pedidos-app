@@ -101,105 +101,194 @@ function setTienda(t) {
   document.getElementById("busquedaTienda").value = t;
 }
 
-
-
 // --- Generación de Pedido (Vista Usuario) ---
+// script.js - Reemplaza las funciones correspondientes
+
 function generarPedido() {
-  const tienda = document.getElementById("busquedaTienda").value;
+  const tienda = document.getElementById("busquedaTienda").value.trim();
   const fechaSel = document.querySelector('input[name="fecha"]:checked');
-  const tiposSeleccionados = Array.from(document.querySelectorAll('input[name="tipo"]:checked')).map(e => e.value);
+  const tiposSeleccionados = [
+    ...document.querySelectorAll('input[name="tipo"]:checked'),
+  ].map((e) => e.value);
 
-  if (!tienda || !fechaSel) {
-    alert("Por favor selecciona tienda y fecha");
-    return;
-  }
+  if (!tienda) { alert("Ingresa una tienda"); return; }
+  if (!fechaSel) { alert("Selecciona una fecha"); return; }
+  if (tiposSeleccionados.length === 0) { alert("Selecciona al menos un tipo de producto"); return; }
 
-  const filas = datos.filter(r => {
-    if (!r["Solicitante"]) return false;
+  const fecha = fechaSel.value;
+
+  // Filtrado de datos
+  const filasFiltradas = datos.filter((r) => {
+    if (!r["Solicitante"] || !r["FePrefEnt."]) return false;
     const partes = r["Solicitante"].split(" ");
     const tipo = partes[partes.length - 1];
-    return r["Solicitante"].includes(tienda) && r["FePrefEnt."] == fechaSel.value && tiposSeleccionados.includes(tipo);
+
+    return (
+      r["Solicitante"].includes(tienda) &&
+      r["FePrefEnt."] == fecha &&
+      tiposSeleccionados.includes(tipo)
+    );
   });
 
-  if (filas.length === 0) {
-    document.getElementById("resultado").innerHTML = "<h3>Sin resultados</h3>";
+  if (filasFiltradas.length === 0) {
+    alert("Sin resultados para la búsqueda.");
     return;
   }
 
-  const columnas = ["FePrefEnt.", "Solic.", "Solicitante", "Material", "Número de material", "Ctd pedido UMV"];
-
-  // Dibujamos la tabla directamente en el resultado
-  let html = `
-    <div class="tabla-wrapper" id="area-captura">
-      <table class="tabla-pedido">
-        <thead>
-          <tr>${columnas.map(col => `<th>${col}</th>`).join('')}</tr>
-        </thead>
-        <tbody>
-          ${filas.map(f => `
-            <tr>${columnas.map(col => `<td>${f[col] || ""}</td>`).join('')}</tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-    <button class="btn-compartir" onclick="compartirImagen()">📲 ENVIAR A WHATSAPP</button>
-  `;
-
-  document.getElementById("resultado").innerHTML = html;
+  abrirVentanaCaptura(filasFiltradas);
 }
 
-async function compartirImagen() {
-  const elemento = document.getElementById("area-captura");
-  const boton = document.querySelector(".btn-compartir");
-  
-  boton.innerText = "⏳ Procesando imagen...";
-  boton.style.opacity = "0.7";
-
-  try {
-    // Al estar visible, html2canvas puede calcular el scrollHeight real
-    const canvas = await html2canvas(elemento, {
-      scale: 2, // Alta definición
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      width: elemento.scrollWidth, // Captura el ancho total aunque haya scroll
-      height: elemento.scrollHeight, // Captura el alto total
-      logging: false,
-      onclone: (clonedDoc) => {
-        // Aseguramos que en el clon para la foto, el wrapper no tenga scroll
-        const wrapper = clonedDoc.getElementById("area-captura");
-        wrapper.style.overflow = "visible";
-        wrapper.style.width = "auto";
-      }
-    });
-
-    canvas.toBlob(async (blob) => {
-      const file = new File([blob], "pedido.png", { type: "image/png" });
-      
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: "Pedido de Tienda",
-          text: "Adjunto el resumen del pedido."
-        });
-      } else {
-        // Fallback: Descarga directa
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "pedido.png";
-        link.click();
-        alert("Imagen generada. Si no se abrió WhatsApp, puedes encontrarla en tus descargas.");
-      }
-      boton.innerText = "📲 ENVIAR A WHATSAPP";
-      boton.style.opacity = "1";
-    }, "image/png");
-
-  } catch (error) {
-    console.error(error);
-    alert("Error al generar la imagen.");
-    boton.innerText = "📲 ENVIAR A WHATSAPP";
-    boton.style.opacity = "1";
+function abrirVentanaCaptura(filas) {
+  const nuevaVentana = window.open("", "_blank");
+  if (!nuevaVentana) {
+    alert("Por favor, permite las ventanas emergentes.");
+    return;
   }
+
+  // Construir filas de la tabla
+  const cuerpoTabla = filas.map(fila => `
+    <tr>
+      ${COLUMNAS_A_MOSTRAR.map(col => `<td>${fila[col] ?? ""}</td>`).join('')}
+    </tr>
+  `).join('');
+
+  nuevaVentana.document.write(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Vista de Impresión - Pedido</title>
+      <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+      <style>
+        body { 
+          font-family: Arial, sans-serif; 
+          margin: 0; 
+          padding: 0; 
+          background: #26303a; 
+          display: flex; 
+          flex-direction: column; 
+          align-items: center;
+        }
+        /* Contenedor que obliga a la tabla a expandirse todo lo necesario */
+        .full-page-container {
+          padding: 40px;
+          width: fit-content;
+          min-width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          box-sizing: border-box;
+        }
+        .toolbar {
+          position: sticky;
+          top: 0;
+          width: 100%;
+          background: #1a2229;
+          padding: 15px;
+          display: flex;
+          justify-content: center;
+          gap: 20px;
+          z-index: 1000;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .btn {
+          padding: 12px 25px;
+          border-radius: 8px;
+          border: none;
+          font-weight: bold;
+          cursor: pointer;
+          font-size: 16px;
+        }
+        .btn-capture { background: #25d366; color: white; }
+        .btn-back { background: #546e7a; color: white; }
+        
+        #area-render {
+          background: white;
+          padding: 25px;
+          margin-top: 20px;
+          box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+        table {
+          border-collapse: collapse;
+          width: auto; /* IMPORTANTE: No limitada al 100% */
+          font-size: 16px;
+        }
+        th { background: #26303a; color: white; padding: 15px; text-align: left; white-space: nowrap; }
+        td { padding: 12px; border-bottom: 1px solid #eee; white-space: nowrap; color: #333; }
+        tr:nth-child(even) { background: #f8f9fa; }
+      </style>
+    </head>
+    <body>
+      <div class="toolbar">
+        <button class="btn btn-back" onclick="window.close()">⬅️ Volver</button>
+        <button class="btn btn-capture" id="btnShare">📸 Compartir en WhatsApp</button>
+      </div>
+
+      <div class="full-page-container">
+        <div id="area-render">
+          <table>
+            <thead>
+              <tr>${COLUMNAS_A_MOSTRAR.map(c => `<th>\${c}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${cuerpoTabla}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <script>
+        document.getElementById('btnShare').onclick = async function() {
+          const btn = this;
+          btn.innerText = "⏳ Generando...";
+          btn.disabled = true;
+
+          const area = document.getElementById('area-render');
+          
+          try {
+            const canvas = await html2canvas(area, {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              backgroundColor: "#ffffff",
+              // Forzamos el tamaño real del contenido
+              width: area.scrollWidth,
+              height: area.scrollHeight
+            });
+
+            canvas.toBlob(async (blob) => {
+              const file = new File([blob], "pedido.png", { type: "image/png" });
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                  files: [file],
+                  title: "Pedido",
+                  text: "Resumen de pedido completo"
+                });
+              } else {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = "pedido.png";
+                link.click();
+              }
+              btn.innerText = "📸 Compartir en WhatsApp";
+              btn.disabled = false;
+            }, 'image/png');
+          } catch (err) {
+            alert("Error al capturar: " + err);
+            btn.disabled = false;
+          }
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  nuevaVentana.document.close();
 }
+
+
+
+
 
 
 
@@ -262,10 +351,6 @@ function generarPedido() {
   contenedorResultado.innerHTML = html;
 }
 */
-
-
-
-
 
 
 
