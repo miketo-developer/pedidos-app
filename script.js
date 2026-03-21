@@ -101,43 +101,121 @@ function setTienda(t) {
   document.getElementById("busquedaTienda").value = t;
 }
 
+
+
+
+// ************************************************ //
 // --- Generación de Pedido (Vista Usuario) ---
-// script.js - Reemplaza las funciones correspondientes
+// Reemplaza estas funciones en tu script.js
 
 function generarPedido() {
   const tienda = document.getElementById("busquedaTienda").value.trim();
   const fechaSel = document.querySelector('input[name="fecha"]:checked');
-  const tiposSeleccionados = [
-    ...document.querySelectorAll('input[name="tipo"]:checked'),
-  ].map((e) => e.value);
+  const tiposSeleccionados = Array.from(document.querySelectorAll('input[name="tipo"]:checked')).map(e => e.value);
 
-  if (!tienda) { alert("Ingresa una tienda"); return; }
-  if (!fechaSel) { alert("Selecciona una fecha"); return; }
-  if (tiposSeleccionados.length === 0) { alert("Selecciona al menos un tipo de producto"); return; }
+  if (!tienda || !fechaSel || tiposSeleccionados.length === 0) {
+    alert("Completa todos los filtros antes de continuar.");
+    return;
+  }
 
-  const fecha = fechaSel.value;
-
-  // Filtrado de datos
   const filasFiltradas = datos.filter((r) => {
     if (!r["Solicitante"] || !r["FePrefEnt."]) return false;
     const partes = r["Solicitante"].split(" ");
     const tipo = partes[partes.length - 1];
-
-    return (
-      r["Solicitante"].includes(tienda) &&
-      r["FePrefEnt."] == fecha &&
-      tiposSeleccionados.includes(tipo)
-    );
+    return r["Solicitante"].includes(tienda) && r["FePrefEnt."] == fechaSel.value && tiposSeleccionados.includes(tipo);
   });
 
   if (filasFiltradas.length === 0) {
-    alert("Sin resultados para la búsqueda.");
+    alert("Sin resultados.");
     return;
   }
 
-  abrirVentanaCaptura(filasFiltradas);
+  mostrarPantallaCompleta(filasFiltradas);
 }
 
+function mostrarPantallaCompleta(filas) {
+  const appPrincipal = document.querySelector(".app");
+  const vistaCaptura = document.getElementById("vista-captura");
+
+  // Ocultamos la interfaz principal (Simulamos cambio de pestaña/activity)
+  appPrincipal.style.display = "none";
+  vistaCaptura.style.display = "block";
+
+  const cuerpoTabla = filas.map(fila => `
+    <tr>
+      ${COLUMNAS_A_MOSTRAR.map(col => `<td>${fila[col] ?? ""}</td>`).join('')}
+    </tr>
+  `).join('');
+
+  vistaCaptura.innerHTML = `
+    <div class="toolbar-captura">
+      <button class="btn-regresar" onclick="regresarPrincipal()">⬅️ Volver a Filtros</button>
+      <button class="btn-whatsapp" id="btnCompartir">📸 COMPARTIR EN WHATSAPP</button>
+    </div>
+    
+    <div class="contenedor-render">
+      <div id="target-foto">
+        <table class="tabla-final">
+          <thead>
+            <tr>${COLUMNAS_A_MOSTRAR.map(c => `<th>${c}</th>`).join('')}</tr>
+          </thead>
+          <tbody>${cuerpoTabla}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // Lógica del botón de captura
+  document.getElementById('btnCompartir').onclick = async function() {
+    this.innerText = "⏳ Procesando...";
+    this.disabled = true;
+
+    const target = document.getElementById('target-foto');
+    
+    try {
+      const canvas = await html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        width: target.scrollWidth,
+        height: target.scrollHeight
+      });
+
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], "pedido.png", { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: "Pedido",
+            text: "Resumen de pedido"
+          });
+        } else {
+          descargarCanvas(canvas);
+        }
+        this.innerText = "📸 COMPARTIR EN WHATSAPP";
+        this.disabled = false;
+      }, 'image/png');
+    } catch (e) {
+      alert("Error en captura");
+      this.disabled = false;
+    }
+  };
+}
+
+function regresarPrincipal() {
+  document.querySelector(".app").style.display = "block";
+  document.getElementById("vista-captura").style.display = "none";
+  document.getElementById("vista-captura").innerHTML = "";
+}
+
+
+
+
+// ************************************************ //
+
+
+
+/*
 function abrirVentanaCaptura(filas) {
   const nuevaVentana = window.open("", "_blank");
   if (!nuevaVentana) {
@@ -170,7 +248,7 @@ function abrirVentanaCaptura(filas) {
           flex-direction: column; 
           align-items: center;
         }
-        /* Contenedor que obliga a la tabla a expandirse todo lo necesario */
+        /* Contenedor que obliga a la tabla a expandirse todo lo necesario 
         .full-page-container {
           padding: 40px;
           width: fit-content;
@@ -211,7 +289,7 @@ function abrirVentanaCaptura(filas) {
         }
         table {
           border-collapse: collapse;
-          width: auto; /* IMPORTANTE: No limitada al 100% */
+          width: auto; /* IMPORTANTE: No limitada al 100% 
           font-size: 16px;
         }
         th { background: #26303a; color: white; padding: 15px; text-align: left; white-space: nowrap; }
@@ -286,14 +364,6 @@ function abrirVentanaCaptura(filas) {
   nuevaVentana.document.close();
 }
 
-
-
-
-
-
-
-
-/*
 function generarPedido() {
   const tienda = document.getElementById("busquedaTienda").value.trim();
   const fechaSel = document.querySelector('input[name="fecha"]:checked');

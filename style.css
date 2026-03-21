@@ -169,6 +169,75 @@ button:active {
 
 /* Eliminamos estilos antiguos e innecesarios como .captura-area y .clon-para-captura */
 
+/* Estilos para la Vista de Pantalla Completa (Pestaña Virtual) */
+#vista-captura {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
+  background: #26303a; /* Fondo oscuro de confirmación */
+  z-index: 9999;
+}
+
+.toolbar-captura {
+  position: sticky;
+  top: 0;
+  background: #1a2229;
+  padding: 15px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  z-index: 10001;
+}
+
+.btn-regresar, .btn-whatsapp {
+  padding: 12px 15px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-regresar { background: #546e7a; color: white; }
+.btn-whatsapp { background: #25d366; color: white; flex-grow: 1; max-width: 250px; }
+
+.contenedor-render {
+  padding: 20px;
+  overflow-x: auto; /* Permite ver la tabla ancha en el cel */
+  display: flex;
+  justify-content: flex-start;
+}
+
+#target-foto {
+  background: white;
+  padding: 20px;
+  width: fit-content; /* Obligatorio para que la foto salga completa */
+}
+
+.tabla-final {
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabla-final th {
+  background: #26303a;
+  color: white;
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #26303a;
+}
+
+.tabla-final td {
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+  white-space: nowrap;
+}
+
+.tabla-final tr:nth-child(even) { background: #f8f9fa; }
+
+
+
 
 
 
