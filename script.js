@@ -101,8 +101,110 @@ function setTienda(t) {
   document.getElementById("busquedaTienda").value = t;
 }
 
-// --- Generación de Pedido (Vista Usuario) ---
 
+
+// --- Generación de Pedido (Vista Usuario) ---
+function generarPedido() {
+  const tienda = document.getElementById("busquedaTienda").value;
+  const fechaSel = document.querySelector('input[name="fecha"]:checked');
+  const tiposSeleccionados = Array.from(document.querySelectorAll('input[name="tipo"]:checked')).map(e => e.value);
+
+  if (!tienda || !fechaSel) {
+    alert("Por favor selecciona tienda y fecha");
+    return;
+  }
+
+  const filas = datos.filter(r => {
+    if (!r["Solicitante"]) return false;
+    const partes = r["Solicitante"].split(" ");
+    const tipo = partes[partes.length - 1];
+    return r["Solicitante"].includes(tienda) && r["FePrefEnt."] == fechaSel.value && tiposSeleccionados.includes(tipo);
+  });
+
+  if (filas.length === 0) {
+    document.getElementById("resultado").innerHTML = "<h3>Sin resultados</h3>";
+    return;
+  }
+
+  const columnas = ["FePrefEnt.", "Solic.", "Solicitante", "Material", "Número de material", "Ctd pedido UMV"];
+
+  // Dibujamos la tabla directamente en el resultado
+  let html = `
+    <div class="tabla-wrapper" id="area-captura">
+      <table class="tabla-pedido">
+        <thead>
+          <tr>${columnas.map(col => `<th>${col}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          ${filas.map(f => `
+            <tr>${columnas.map(col => `<td>${f[col] || ""}</td>`).join('')}</tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <button class="btn-compartir" onclick="compartirImagen()">📲 ENVIAR A WHATSAPP</button>
+  `;
+
+  document.getElementById("resultado").innerHTML = html;
+}
+
+async function compartirImagen() {
+  const elemento = document.getElementById("area-captura");
+  const boton = document.querySelector(".btn-compartir");
+  
+  boton.innerText = "⏳ Procesando imagen...";
+  boton.style.opacity = "0.7";
+
+  try {
+    // Al estar visible, html2canvas puede calcular el scrollHeight real
+    const canvas = await html2canvas(elemento, {
+      scale: 2, // Alta definición
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      width: elemento.scrollWidth, // Captura el ancho total aunque haya scroll
+      height: elemento.scrollHeight, // Captura el alto total
+      logging: false,
+      onclone: (clonedDoc) => {
+        // Aseguramos que en el clon para la foto, el wrapper no tenga scroll
+        const wrapper = clonedDoc.getElementById("area-captura");
+        wrapper.style.overflow = "visible";
+        wrapper.style.width = "auto";
+      }
+    });
+
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], "pedido.png", { type: "image/png" });
+      
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "Pedido de Tienda",
+          text: "Adjunto el resumen del pedido."
+        });
+      } else {
+        // Fallback: Descarga directa
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "pedido.png";
+        link.click();
+        alert("Imagen generada. Si no se abrió WhatsApp, puedes encontrarla en tus descargas.");
+      }
+      boton.innerText = "📲 ENVIAR A WHATSAPP";
+      boton.style.opacity = "1";
+    }, "image/png");
+
+  } catch (error) {
+    console.error(error);
+    alert("Error al generar la imagen.");
+    boton.innerText = "📲 ENVIAR A WHATSAPP";
+    boton.style.opacity = "1";
+  }
+}
+
+
+
+
+/*
 function generarPedido() {
   const tienda = document.getElementById("busquedaTienda").value.trim();
   const fechaSel = document.querySelector('input[name="fecha"]:checked');
@@ -159,6 +261,10 @@ function generarPedido() {
 
   contenedorResultado.innerHTML = html;
 }
+*/
+
+
+
 
 
 

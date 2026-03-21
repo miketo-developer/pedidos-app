@@ -119,50 +119,62 @@ button:active {
   margin-top: 20px;
 }
 
+
+/* Limpieza y ajuste de la tabla para captura real */
 .tabla-wrapper {
   background: white;
-  padding: 15px;
+  margin-top: 20px;
+  padding: 10px;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  overflow-x: auto; /* Permite scroll horizontal en móvil */
-  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  overflow-x: auto; /* Permite scroll horizontal si es muy ancha */
+  width: 100%;
 }
 
 .tabla-pedido {
   border-collapse: collapse;
   width: 100%;
-  min-width: 600px; /* Ancho mínimo para que no se amontone */
+  min-width: 900px; /* Forzamos que sea ancha para que no se amontone el texto */
   font-size: 14px;
+  background: white;
 }
 
 .tabla-pedido th {
-  background: #26262c; /* NUEVO COLOR CONFIRMACIÓN */
+  background: #26303a; /* COLOR DE CONFIRMACIÓN */
   color: white;
-  padding: 12px 10px;
+  padding: 15px 10px;
   text-align: left;
-  position: sticky; /* Opcional: encabezado fijo al hacer scroll */
-  top: 0;
+  border: 1px solid #26303a;
 }
 
 .tabla-pedido td {
   border-bottom: 1px solid #eee;
-  padding: 10px;
+  padding: 12px 10px;
+  color: #333;
+  white-space: nowrap; /* Evita que el texto salte de línea y arruine la estética */
 }
 
 .tabla-pedido tr:nth-child(even) {
   background: #f8f9fa;
 }
 
-.exportar {
-  margin-top: 15px;
-  background: #25d366; /* Color WhatsApp */
-  font-size: 18px;
-  padding: 16px;
+/* Botón de compartir resaltado */
+.btn-compartir {
+  background: #25d366;
+  color: white;
+  font-size: 20px;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 15px;
+  border: none;
+  font-weight: bold;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
 }
 
-.exportar:hover {
-  background: #1da851;
-}
+
+
 
 /* Eliminamos estilos antiguos e innecesarios como .captura-area y .clon-para-captura */
 
