@@ -1,347 +1,56 @@
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #f7e8ad; /* Tu color preferido */
-  margin: 0;
-  padding: 15px;
-  color: #333;
+    font-family: system-ui, sans-serif;
+    background: #f7c2ad;
+    margin: 0; padding: 15px;
 }
 
 .app { max-width: 500px; margin: auto; }
-h1 { text-align: center; font-size: 22px; color: #1a2229; }
 
-/* Tarjetas y Contenedores */
 .card {
-  background: white;
-  padding: 15px;
-  border-radius: 12px;
-  margin-top: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.seccion-titulo { font-weight: bold; display: block; margin-bottom: 10px; }
-
-/* Elementos de Formulario */
 input, button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
 }
 
-.btn-primario {
-  background: #1976d2;
-  color: white;
-  border: none;
-  font-weight: bold;
-}
+.btn-primario { background: #1976d2; color: white; font-weight: bold; border: none; }
+.btn-whatsapp { background: #25d366; color: white; font-weight: bold; border: none; margin-bottom: 30px; }
 
-.rapidas { display: flex; gap: 8px; margin-top: 5px; }
-.rapidas button { background: #546e7a; color: white; border: none; padding: 10px; }
+.rapidas { display: flex; gap: 8px; }
+.rapidas button { background: #546e7a; color: white; }
 
-/* Filtros de lista */
-.opciones-lista { display: flex; flex-direction: column; gap: 5px; }
-.opcion {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
+.opciones-lista { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.opcion { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 6px; }
 .opcion input { width: auto; margin: 0; }
 
-/* --- VISTA DE CAPTURA (OVERLAY) --- */
-#vista-captura {
-  position: absolute;
-  top: 0; left: 0; width: 100%; min-height: 100vh;
-  background: #26303a;
-  z-index: 9999;
-}
-
-.toolbar-captura {
-  position: sticky; top: 0;
-  background: #1a2229;
-  padding: 12px;
-  display: flex; gap: 10px;
-  z-index: 1000;
-}
-
-.btn-regresar { background: #455a64; color: white; width: auto; }
-.btn-whatsapp { background: #25d366; color: white; width: auto; flex-grow: 1; border: none; }
-
-.contenedor-render {
-  padding: 20px;
-  overflow-x: auto;
-}
-
-.tabla-final {
-  border-collapse: collapse;
-  font-size: 13px;
-  min-width: 800px;
-}
-
-.tabla-final th {
-  background: #26303a;
-  color: white;
-  padding: 12px;
-  text-align: left;
-}
-
-.tabla-final td {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  white-space: nowrap;
-}
-
-.tabla-final tr:nth-child(even) { background: #f8f9fa; }
-
-
-
-
-
-
-
-
-
-
-/* style.css 
-body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #adeef7;
-  margin: 0;
-  padding: 15px;
-  color: #333;
-}
-
-.app {
-  max-width: 520px;
-  margin: auto;
-}
-
-h1 {
-  text-align: center;
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-/* Estilos de inputs y botones 
-input, select, button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 10px;
-  font-size: 16px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  box-sizing: border-box; /* Crucial para el padding 
-}
-
-input:focus, select:focus {
-  outline: 2px solid #1976d2;
-  border-color: transparent;
-}
-
-button {
-  background: #1976d2;
-  color: white;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-button:hover {
-  background: #1565c0;
-}
-
-button:active {
-  transform: translateY(1px);
-}
-
-/* Secciones de filtros 
-.fechas, .tipos {
-  background: white;
-  padding: 15px;
-  border-radius: 12px;
-  margin-top: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.seccion-titulo {
-  font-weight: bold;
-  font-size: 16px;
-  margin-bottom: 10px;
-  display: block;
-}
-
-/* Botones rápidos *
-.rapidas {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.rapidas button {
-  flex: 1;
-  background: #546e7a;
-  padding: 12px;
-  font-size: 15px;
-}
-
-.rapidas button:hover {
-  background: #455a64;
-}
-
-/* Lista de opciones (radio/checkbox) *
-.opciones-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.opcion {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  background: #fafafa;
-  border-radius: 8px;
-  border: 1px solid #eee;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.opcion:hover {
-  background: #f0f0f0;
-}
-
-.opcion input {
-  width: auto;
-  margin: 0;
-  transform: scale(1.1);
-}
-
-/* Resultado y Tabla (lo que ve el usuario) *
-#resultado {
-  margin-top: 20px;
-}
-
-
-
-
-.tabla-wrapper {
-  background: white;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  overflow-x: auto; /* Permite scroll horizontal en móvil *
-  -webkit-overflow-scrolling: touch;
+/* Contenedor de la tabla con scroll para el usuario */
+.tabla-container {
+    background: white;
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 10px;
+    overflow-x: auto; /* Scroll horizontal en móvil */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .tabla-pedido {
-  border-collapse: collapse;
-  width: 100%;
-  min-width: 600px; /* Ancho mínimo para que no se amontone *
-  font-size: 14px;
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 600px; /* Evita que se amontone */
+    font-size: 13px;
 }
 
-.tabla-pedido th {
-  background: #26262c; /* NUEVO COLOR CONFIRMACIÓN *
-  color: white;
-  padding: 12px 10px;
-  text-align: left;
-  position: sticky; /* Opcional: encabezado fijo al hacer scroll *
-  top: 0;
-}
-
-.tabla-pedido td {
-  border-bottom: 1px solid #eee;
-  padding: 10px;
-}
-
-.tabla-pedido tr:nth-child(even) {
-  background: #f8f9fa;
-}
-
-.exportar {
-  margin-top: 15px;
-  background: #25d366; /* Color WhatsApp *
-  font-size: 18px;
-  padding: 16px;
-}
-
-.exportar:hover {
-  background: #1da851;
-}
-
-/* Eliminamos estilos antiguos e innecesarios como .captura-area y .clon-para-captura *
-
-/* Estilos para la Vista de Pantalla Completa (Pestaña Virtual) *
-#vista-captura {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  min-height: 100vh;
-  background: #26303a; /* Fondo oscuro de confirmación *
-  z-index: 9999;
-}
-
-.toolbar-captura {
-  position: sticky;
-  top: 0;
-  background: #1a2229;
-  padding: 15px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  z-index: 10001;
-}
-
-.btn-regresar, .btn-whatsapp {
-  padding: 12px 15px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.btn-regresar { background: #546e7a; color: white; }
-.btn-whatsapp { background: #25d366; color: white; flex-grow: 1; max-width: 250px; }
-
-.contenedor-render {
-  padding: 20px;
-  overflow-x: auto; /* Permite ver la tabla ancha en el cel *
-  display: flex;
-  justify-content: flex-start;
-}
-
-#target-foto {
-  background: white;
-  padding: 20px;
-  width: fit-content; /* Obligatorio para que la foto salga completa *
-}
-
-.tabla-final {
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.tabla-final th {
-  background: #26303a;
-  color: white;
-  padding: 12px;
-  text-align: left;
-  border: 1px solid #26303a;
-}
-
-.tabla-final td {
-  border-bottom: 1px solid #eee;
-  padding: 10px;
-  white-space: nowrap;
-}
-
-.tabla-final tr:nth-child(even) { background: #f8f9fa; }
-*/
+.tabla-pedido th { background: #26303a; color: white; padding: 10px; text-align: left; }
+.tabla-pedido td { padding: 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
+.tabla-pedido tr:nth-child(even) { background: #f8f9fa; }
