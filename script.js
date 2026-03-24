@@ -117,21 +117,29 @@ function generarPedido() {
                 ⚠️ Sin pedido
             </div>
         `;
-        return;
+    } else {
+        // ESCENARIO B: Sí hay resultados (Dibujar tabla)
+        contenedor.innerHTML = `
+            <div class="tabla-container">
+                <table class="tabla-pedido">
+                    <thead><tr>${COLUMNAS.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+                    <tbody>
+                        ${filtrados.map(f => `<tr>${COLUMNAS.map(c => `<td>${f[c] ?? ""}</td>`).join('')}</tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn-whatsapp" onclick="compartirImagen('${tienda}')">📲 Compartir en WhatsApp</button>
+        `;
     }
 
-    // ESCENARIO B: Sí hay resultados (Dibujar tabla)
-    contenedor.innerHTML = `
-        <div class="tabla-container">
-            <table class="tabla-pedido">
-                <thead><tr>${COLUMNAS.map(c => `<th>${c}</th>`).join('')}</tr></thead>
-                <tbody>
-                    ${filtrados.map(f => `<tr>${COLUMNAS.map(c => `<td>${f[c] ?? ""}</td>`).join('')}</tr>`).join('')}
-                </tbody>
-            </table>
-        </div>
-        <button class="btn-whatsapp" onclick="compartirImagen('${tienda}')">📲 Compartir en WhatsApp</button>
-    `;
+    // --- MEJORA: Scroll automático al resultado ---
+    // Usamos un pequeño timeout para asegurar que el navegador ya dibujó el contenido
+    setTimeout(() => {
+        contenedor.scrollIntoView({ 
+            behavior: 'smooth', // Movimiento fluido, no un salto brusco
+            block: 'start'      // Alinea el inicio del contenedor con la parte superior
+        });
+    }, 100);
 }
 
 /**
