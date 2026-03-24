@@ -54,3 +54,17 @@ input, button {
 .tabla-pedido th { background: #26303a; color: white; padding: 10px; text-align: left; }
 .tabla-pedido td { padding: 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
 .tabla-pedido tr:nth-child(even) { background: #f8f9fa; }
+
+/* Mensaje de estado vacío */
+.mensaje-vacio {
+    background: #fff3cd;
+    color: #856404;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    border: 1px solid #ffeeba;
+    margin-top: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
