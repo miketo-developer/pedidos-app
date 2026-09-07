@@ -1,4 +1,3 @@
-
 let datos=[];
 let todasLasColumnasDetectadas=[];
 const TIPOS_VALIDOS=["HVO","PER","COC"];
@@ -7,6 +6,42 @@ const STORAGE_KEY="columnasVisiblesPedidos_v1";
 let columnasVisibles=cargarColumnasVisibles();
 let fechaDetectadaPorFiltro=null;
 let infoFiltro=null;
+
+// --- NUEVO: SISTEMA DE TOASTS (NOTIFICACIONES) ---
+function showToast(mensaje, tipo = 'warning') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${tipo}`;
+    toast.innerText = mensaje;
+    container.appendChild(toast);
+    
+    // El CSS se encarga de la animación de salida a los 3.5s
+    setTimeout(() => {
+        if(toast.parentElement) toast.parentElement.removeChild(toast);
+    }, 4000); // 4s asegura que el DOM se limpie después de la animación
+}
+
+// --- NUEVO: CONTROL DEL BOTTOM SHEET ---
+function abrirFiltros() {
+    if(datos.length === 0) {
+        return showToast("Primero debes elegir un archivo Excel", "warning");
+    }
+    const overlay = document.getElementById("bottomSheetOverlay");
+    overlay.style.display = "flex";
+    setTimeout(() => overlay.classList.add("active"), 10);
+}
+
+function cerrarFiltros() {
+    const overlay = document.getElementById("bottomSheetOverlay");
+    overlay.classList.remove("active");
+    setTimeout(() => overlay.style.display = "none", 300);
+}
+
+// Cerrar Bottom Sheet al tocar fuera de la ventana
+document.getElementById("bottomSheetOverlay").addEventListener("click", (e) => {
+    if(e.target === document.getElementById("bottomSheetOverlay")) cerrarFiltros();
+});
+// ------------------------------------------------
 
 function normalizar(s){return String(s).toLowerCase().trim().replace(/\s+/g,' ');}
 
@@ -31,37 +66,28 @@ function encontrarFilaEncabezado(matriz){
   return -1;
 }
 
-// NUEVO: Parser de filtros usando JSZip leyendo el XML interno del Excel
 async function parsearFiltrosExcel(file){
   try{
     if(typeof JSZip==="undefined"){ console.warn("JSZip no cargado"); return null; }
     const zip=await JSZip.loadAsync(file);
-    // sheet1.xml puede estar en xl/worksheets/sheet1.xml o sheet2, etc. Tomamos el primero
     let sheetFile=null;
-    // Buscar el primer worksheet
     const worksheetFiles=Object.keys(zip.files).filter(n=>n.match(/xl\/worksheets\/sheet\d+\.xml/));
-    if(worksheetFiles.length===0){ console.warn("No se encontró sheet xml"); return null; }
+    if(worksheetFiles.length===0){ return null; }
     sheetFile=zip.file(worksheetFiles[0]);
     const xml=await sheetFile.async("string");
-    console.log("XML de hoja leído, longitud:", xml.length);
 
-    // 1. Filas ocultas
     const hiddenRows=new Set();
     const regex1=/<row[^>]*\sr="(\d+)"[^>]*hidden="1"/g;
     const regex2=/<row[^>]*hidden="1"[^>]*\sr="(\d+)"/g;
     let m;
     while((m=regex1.exec(xml))!==null){ hiddenRows.add(parseInt(m[1])); }
     while((m=regex2.exec(xml))!==null){ hiddenRows.add(parseInt(m[1])); }
-    console.log(`Filas ocultas encontradas en XML: ${hiddenRows.size}`);
 
-    // 2. AutoFilter
     let filtros={};
     let fechaFiltro=null;
     const autoFilterMatch=xml.match(/<autoFilter[\s\S]*?<\/autoFilter>/);
     if(autoFilterMatch){
       const autoXml=autoFilterMatch[0];
-      console.log("autoFilter encontrado:", autoXml.substring(0,500));
-      // Extraer cada filterColumn
       const colRegex=/<filterColumn[^>]*colId="(\d+)"[^>]*>([\s\S]*?)<\/filterColumn>/g;
       while((m=colRegex.exec(autoXml))!==null){
         const colId=parseInt(m[1]);
@@ -71,20 +97,11 @@ async function parsearFiltrosExcel(file){
         let vm;
         while((vm=valRegex.exec(inner))!==null){ vals.push(vm[1]); }
         filtros[colId]=vals;
-        console.log(`colId ${colId} ->`, vals);
       }
-      // colId 4 = columna E = FePrefEnt. según tu archivo (A=0, B=1, C=2, D=3, E=4)
-      if(filtros[4] && filtros[4].length>0){
-        fechaFiltro=filtros[4][0];
-        console.log("Fecha detectada desde autoFilter:", fechaFiltro);
-      }
-    } else {
-      console.log("No se encontró autoFilter en XML");
+      if(filtros[4] && filtros[4].length>0){ fechaFiltro=filtros[4][0]; }
     }
-
     return {hiddenRows, filtros, fechaFiltro};
   }catch(e){
-    console.error("Error en parsearFiltrosExcel:", e);
     return null;
   }
 }
@@ -96,50 +113,33 @@ document.getElementById("archivo").addEventListener("change", async (e)=>{
   document.getElementById("listaTipos").innerHTML="";
   datos=[]; todasLasColumnasDetectadas=[]; fechaDetectadaPorFiltro=null; infoFiltro=null;
 
-  // Mostrar cargando
-  const listaFechasDiv=document.getElementById("listaFechas");
-  listaFechasDiv.innerHTML='<div style="padding:10px;color:#666">⏳ Analizando filtros del Excel...</div>';
-
   try{
-    // 1. Primero intentar parsear filtros con JSZip (más confiable que !rows)
     const infoFiltros=await parsearFiltrosExcel(file);
     let hiddenRowsSet=new Set();
     let fechaDesdeXml=null;
     if(infoFiltros){
       hiddenRowsSet=infoFiltros.hiddenRows;
       fechaDesdeXml=infoFiltros.fechaFiltro;
-      if(fechaDesdeXml){
-        fechaDetectadaPorFiltro=fechaDesdeXml;
-        console.log("✅ Fecha detectada desde XML:", fechaDetectadaPorFiltro);
-      }
+      if(fechaDesdeXml){ fechaDetectadaPorFiltro=fechaDesdeXml; }
     }
 
-    // 2. Luego leer con SheetJS para los datos
     const dataArray=await file.arrayBuffer();
     const data=new Uint8Array(dataArray);
     const workbook=XLSX.read(data,{type:"array"});
     const sheet=workbook.Sheets[workbook.SheetNames[0]];
 
-    console.log("SheetJS !rows:", sheet['!rows'] ? sheet['!rows'].length+" filas" : "NO existe !rows (normal en CDN)");
-    if(sheet['!rows']){
-      const ocultas=sheet['!rows'].filter(r=>r&&r.hidden).length;
-      console.log("Ocultas por SheetJS:", ocultas);
-    }
-
     const matriz=XLSX.utils.sheet_to_json(sheet,{header:1, defval:""});
     const headerIndex=encontrarFilaEncabezado(matriz);
-    console.log("Header index:", headerIndex);
-    if(headerIndex===-1){ alert("No se encontró encabezado"); return; }
+    
+    // Cambio: alert por Toast
+    if(headerIndex===-1){ return showToast("No se encontró encabezado en el Excel", "error"); }
 
     const headerRow=matriz[headerIndex].map(h=>String(h).trim());
     todasLasColumnasDetectadas=headerRow.filter(h=>h!=="");
 
-    // Usar hiddenRowsSet del XML si existe, si no intentar !rows
     const filasInfo=sheet['!rows']||[];
     const isFilaOculta=(excelRowNum)=>{
-      // Prioridad 1: set del XML
       if(hiddenRowsSet.has(excelRowNum)) return true;
-      // Prioridad 2: !rows de SheetJS
       const info=filasInfo[excelRowNum-1];
       return info && info.hidden===true;
     };
@@ -160,17 +160,13 @@ document.getElementById("archivo").addEventListener("change", async (e)=>{
       const visibles=datos.filter(d=>d._visible);
       const totalVis=visibles.length;
       const totalOcu=datos.length-totalVis;
-      console.log(`Total ${datos.length}, Visibles ${totalVis}, Ocultas ${totalOcu}`);
 
-      // Si no teníamos fecha desde XML, intentar deducirla de visibles
       if(!fechaDetectadaPorFiltro && totalVis>0 && totalVis < datos.length){
         const conteo={}; visibles.forEach(r=>{ const f=String(r["FePrefEnt."]||"").trim(); if(f) conteo[f]=(conteo[f]||0)+1; });
-        console.log("Conteo fechas visibles:", conteo);
         let maxF=null,maxC=0; Object.entries(conteo).forEach(([f,c])=>{ if(c>maxC){maxC=c; maxF=f;}});
-        if(maxF){ fechaDetectadaPorFiltro=maxF; console.log("Fecha deducida de visibles:", maxF); }
+        if(maxF){ fechaDetectadaPorFiltro=maxF; }
       }
 
-      // Si aún no hay fecha pero sí la tenemos del XML, usarla
       if(fechaDesdeXml && !fechaDetectadaPorFiltro){ fechaDetectadaPorFiltro=fechaDesdeXml; }
 
       if(fechaDetectadaPorFiltro){
@@ -184,16 +180,11 @@ document.getElementById("archivo").addEventListener("change", async (e)=>{
 
       detectarFiltros();
       actualizarModalColumnas();
-
-      if(fechaDetectadaPorFiltro){
-        alert(`✅ Filtro Excel detectado: ${fechaDetectadaPorFiltro}\n${infoFiltro.visibles} visibles de ${datos.length} totales.\nSe preseleccionó automáticamente.`);
-      } else {
-        alert(`Archivo cargado: ${datos.length} registros.\nNo se detectó filtro automático (se mostrarán todas las fechas).`);
-      }
+      
+      // Cambio: Eliminamos los alerts molestos de "Archivo cargado" como solicitaste. Todo se carga en silencio.
     }
   }catch(err){
-    console.error(err);
-    alert("Error: "+err.message);
+    showToast("Error al procesar archivo: " + err.message, "error");
   }
 });
 
@@ -223,11 +214,13 @@ function generarPedido(){
   const fecha=document.querySelector('input[name="fecha"]:checked')?.value;
   const tipos=[...document.querySelectorAll('input[name="tipo"]:checked')].map(e=>e.value);
   const cont=document.getElementById("resultado");
-  if(!tienda||!fecha||tipos.length===0) return alert("Selecciona tienda, fecha y tipo");
+  
+  // Cambio: alert por Toast
+  if(!tienda||!fecha||tipos.length===0) return showToast("Falta seleccionar tienda, fecha o tipo de producto", "warning");
+  
   const filtrados=datos.filter(r=>String(r["Solicitante"]??"").includes(tienda) && String(r["FePrefEnt."])==String(fecha) && tipos.includes(String(r["Solicitante"]??"").split(" ").pop()));
   if(filtrados.length===0){ cont.innerHTML=`<div class="mensaje-vacio">⚠️ Sin pedido</div>`; }
   else{
-    // Obtener el nombre del solicitante del primer registro filtrado (tal cual viene en Excel)
     const nombreSolicitante = filtrados[0]?.["Solicitante"] || `Tienda ${tienda}`;
     const fechaTitulo = fecha || "";
     cont.innerHTML=`<div class="tabla-container" id="contenedorCaptura"><div class="titulo-solicitante"><span class="titulo-izq">${nombreSolicitante}</span><span class="titulo-der">${fechaTitulo}</span></div><table class="tabla-pedido"><thead><tr>${columnasVisibles.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${filtrados.map(f=>`<tr>${columnasVisibles.map(c=>`<td>${f[c]??""}</td>`).join('')}</tr>`).join('')}</tbody></table></div><button class="btn-whatsapp" onclick="compartirImagen('${tienda}')">📲 Compartir en WhatsApp</button>`;
@@ -247,7 +240,11 @@ async function compartirImagen(nTienda){
       else{ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`Pedido_${nTienda}.png`; a.click(); }
       btn.innerText="📲 Compartir en WhatsApp"; btn.disabled=false; document.body.removeChild(clon);
     });
-  }catch(e){ alert("Error captura"); btn.disabled=false; try{document.body.removeChild(clon);}catch{} }
+  }catch(e){ 
+      showToast("Error al generar la imagen", "error"); 
+      btn.disabled=false; 
+      try{document.body.removeChild(clon);}catch{} 
+  }
 }
 
 const modal=document.getElementById("modalAjustes");
@@ -261,7 +258,10 @@ modal.addEventListener("click",(e)=>{ if(e.target===modal) cerrarModal(); });
 btnGuardar.addEventListener("click",()=>{
   const checks=[...document.querySelectorAll('#listaColumnasAjustes input[type="checkbox"]')];
   const sel=checks.filter(c=>c.checked).map(c=>c.value);
-  if(!sel.length){ alert("Selecciona al menos 1"); return; }
+  
+  // Cambio: alert por Toast
+  if(!sel.length){ return showToast("Debes seleccionar al menos 1 columna", "warning"); }
+  
   columnasVisibles=sel; guardarColumnasVisibles(); cerrarModal();
   if(document.querySelector(".tabla-pedido")) generarPedido();
 });
