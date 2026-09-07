@@ -165,21 +165,38 @@ input, button {
     font-size: 13px;
     margin-bottom: 8px;
 }
-/* Título del solicitante encima de la tabla */
+/* Título del solicitante encima de la tabla - con fecha a la derecha */
 .titulo-solicitante {
-    color: #0D47A1;
+    background: #ff7b00;
+    color: #ffffff;
     font-weight: bold;
-    font-size: 18px;
-    text-align: center;
-    padding: 12px 10px 14px 10px;
-    background: #e3f2fd;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
     border-radius: 8px 8px 0 0;
-    border-bottom: 2px solid #1976d2;
     margin-bottom: 0;
     letter-spacing: 0.2px;
     text-transform: uppercase;
+    gap: 12px;
+    white-space: nowrap;
+}
+.titulo-solicitante .titulo-izq {
+    text-align: left;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.titulo-solicitante .titulo-der {
+    text-align: right;
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-weight: bold;
 }
 .tabla-container .titulo-solicitante + table {
     margin-top: 0;
 }
+
 

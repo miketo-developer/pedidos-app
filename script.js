@@ -229,7 +229,8 @@ function generarPedido(){
   else{
     // Obtener el nombre del solicitante del primer registro filtrado (tal cual viene en Excel)
     const nombreSolicitante = filtrados[0]?.["Solicitante"] || `Tienda ${tienda}`;
-    cont.innerHTML=`<div class="tabla-container" id="contenedorCaptura"><div class="titulo-solicitante">${nombreSolicitante}</div><table class="tabla-pedido"><thead><tr>${columnasVisibles.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${filtrados.map(f=>`<tr>${columnasVisibles.map(c=>`<td>${f[c]??""}</td>`).join('')}</tr>`).join('')}</tbody></table></div><button class="btn-whatsapp" onclick="compartirImagen('${tienda}')">📲 Compartir en WhatsApp</button>`;
+    const fechaTitulo = fecha || "";
+    cont.innerHTML=`<div class="tabla-container" id="contenedorCaptura"><div class="titulo-solicitante"><span class="titulo-izq">${nombreSolicitante}</span><span class="titulo-der">${fechaTitulo}</span></div><table class="tabla-pedido"><thead><tr>${columnasVisibles.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${filtrados.map(f=>`<tr>${columnasVisibles.map(c=>`<td>${f[c]??""}</td>`).join('')}</tr>`).join('')}</tbody></table></div><button class="btn-whatsapp" onclick="compartirImagen('${tienda}')">📲 Compartir en WhatsApp</button>`;
   }
   setTimeout(()=>cont.scrollIntoView({behavior:'smooth',block:'start'}),100);
 }
@@ -278,3 +279,4 @@ function actualizarModalColumnas(){
   const visiblesNorm=new Set(columnasVisibles.map(normalizar));
   cont.innerHTML=unicas.map(col=>`<label class="opcion"><input type="checkbox" value="${col}" ${visiblesNorm.has(normalizar(col))?"checked":""}><span>${col}</span></label>`).join('');
 }
+
