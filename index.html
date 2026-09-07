@@ -30,19 +30,35 @@
             <button type="button" onclick="setTienda('3296')">3296</button>
         </div>
 
-        <div class="card">
-            <span class="seccion-titulo">📅 Fechas disponibles</span>
-            <div id="listaFechas" class="opciones-lista"></div>
-        </div>
-
-        <div class="card">
-            <span class="seccion-titulo">Tipo de producto</span>
-            <div id="listaTipos" class="opciones-lista"></div>
-        </div>
+        <!-- NUEVO: Botón para abrir el Bottom Sheet -->
+        <button id="btnAbrirFiltros" class="btn-filtros" type="button" onclick="abrirFiltros()">
+            <span>⚙️ Ajustar Filtros (Fechas y Tipos)</span>
+            <span class="icono-despliegue">🔽</span>
+        </button>
 
         <button class="btn-primario" type="button" onclick="generarPedido()">Mostrar pedido</button>
 
         <div id="resultado"></div>
+    </div>
+
+    <!-- NUEVO: Estructura del Bottom Sheet -->
+    <div id="bottomSheetOverlay" class="bottom-sheet-overlay" style="display:none;">
+        <div id="bottomSheet" class="bottom-sheet">
+            <div class="bs-handle"></div>
+            <div class="bs-header">
+                <h3>Filtros del Pedido</h3>
+                <button class="btn-icon small" type="button" onclick="cerrarFiltros()">✕</button>
+            </div>
+            <div class="bs-content">
+                <span class="seccion-titulo">📅 Fechas disponibles</span>
+                <div id="listaFechas" class="opciones-lista"></div>
+
+                <span class="seccion-titulo" style="margin-top:20px;">Tipo de producto</span>
+                <div id="listaTipos" class="opciones-lista"></div>
+                
+                <button class="btn-primario" style="margin-top: 25px;" onclick="cerrarFiltros()">Aplicar y Cerrar</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal de ajustes de columnas -->
@@ -55,11 +71,14 @@
             <p class="modal-desc">Selecciona qué columnas quieres ver en la tabla. Se guardará automáticamente.</p>
             <div id="listaColumnasAjustes" class="opciones-lista modal-lista"></div>
             <div class="modal-acciones">
-                <button type="button" class="btn-secundario" onclick="seleccionarPredeterminadas()">Restaurar por defecto</button>
+                <button type="button" class="btn-secundario" onclick="seleccionarPredeterminadas()">Restaurar</button>
                 <button type="button" class="btn-primario" id="btnGuardarAjustes">Guardar</button>
             </div>
         </div>
     </div>
+
+    <!-- NUEVO: Contenedor para notificaciones (Toasts) -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <script src="script.js"></script>
 </body>
