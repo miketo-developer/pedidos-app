@@ -7,13 +7,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Pedidos por tienda</title>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
     <div class="app">
-        <h1>📦 Pedidos por tienda</h1>
+        <header class="app-header">
+            <h1>📦 Pedidos por tienda</h1>
+            <button id="btnAjustes" class="btn-icon" type="button" title="Configurar columnas" aria-label="Configurar columnas">
+                ⚙️
+            </button>
+        </header>
 
         <input type="file" id="archivo" accept=".xlsx, .xls" />
         <input id="busquedaTienda" type="text" inputmode="numeric" placeholder="🔎 Buscar tienda (ej. 1109)" />
@@ -39,11 +45,22 @@
         <div id="resultado"></div>
     </div>
 
+    <!-- Modal de ajustes de columnas -->
+    <div id="modalAjustes" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Columnas a mostrar</h3>
+                <button id="btnCerrarModal" class="btn-icon small" type="button">✕</button>
+            </div>
+            <p class="modal-desc">Selecciona qué columnas quieres ver en la tabla. Se guardará automáticamente.</p>
+            <div id="listaColumnasAjustes" class="opciones-lista modal-lista"></div>
+            <div class="modal-acciones">
+                <button type="button" class="btn-secundario" onclick="seleccionarPredeterminadas()">Restaurar por defecto</button>
+                <button type="button" class="btn-primario" id="btnGuardarAjustes">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-

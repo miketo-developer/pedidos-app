@@ -6,6 +6,39 @@ body {
 
 .app { max-width: 500px; margin: auto; }
 
+/* Header con ícono de ajustes */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.app-header h1 {
+    margin: 0;
+    font-size: 22px;
+    flex: 1;
+}
+.btn-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    padding: 0;
+    margin: 0;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    background: white;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+.btn-icon.small {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    font-size: 16px;
+}
+.btn-icon:active { transform: scale(0.95); }
+
 .card {
     background: white;
     padding: 15px;
@@ -25,6 +58,7 @@ input, button {
 }
 
 .btn-primario { background: #1976d2; color: white; font-weight: bold; border: none; }
+.btn-secundario { background: #e0e0e0; color: #333; font-weight: 600; border: none; }
 .btn-whatsapp { background: #25d366; color: white; font-weight: bold; border: none; margin-bottom: 30px; }
 
 .rapidas { display: flex; gap: 8px; }
@@ -40,14 +74,14 @@ input, button {
     margin-top: 20px;
     padding: 10px;
     border-radius: 10px;
-    overflow-x: auto; /* Scroll horizontal en móvil */
+    overflow-x: auto;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .tabla-pedido {
     border-collapse: collapse;
     width: 100%;
-    min-width: 600px; /* Evita que se amontone */
+    min-width: 600px;
     font-size: 13px;
 }
 
@@ -68,3 +102,84 @@ input, button {
     margin-top: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
+
+/* Modal de ajustes */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 15px;
+}
+.modal-content {
+    background: white;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.modal-header h3 { margin: 0; font-size: 18px; }
+.modal-desc { margin: 8px 0 4px; color: #666; font-size: 14px; }
+.modal-lista {
+    overflow-y: auto;
+    max-height: 50vh;
+    padding-right: 4px;
+    margin-top: 12px;
+}
+.modal-acciones {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+.modal-acciones button { margin-top: 0; }
+
+/* Nuevo: destacado para fecha detectada del filtro Excel */
+.opcion-destacada {
+    background: #e8f5e9 !important;
+    border: 1.5px solid #2e7d32;
+    font-weight: 600;
+}
+.info-filtro {
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    color: #0d47a1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+/* Título del solicitante encima de la tabla */
+.titulo-solicitante {
+    color: #0D47A1;
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+    padding: 12px 10px 14px 10px;
+    background: #e3f2fd;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 2px solid #1976d2;
+    margin-bottom: 0;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+.tabla-container .titulo-solicitante + table {
+    margin-top: 0;
+}
+
